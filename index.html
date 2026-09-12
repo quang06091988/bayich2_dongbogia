@@ -21,431 +21,451 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f5233'/%3E%3Cpath d='M9 12h12l-3-3M23 20H11l3 3' stroke='%23e9c46a' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --xanh:#2f5233; --xanh-nhat:#3f6b45; --gao:#e9c46a; --kem:#f6f1e4;
+  --xanh:#2f5233; --gao:#e9c46a; --kem:#f6f1e4;
   --giay:#fffdf7; --muc:#1f2a20; --mo:#6d7a6e; --vien:#ded5bf;
-  --do:#b3261e; --do-nen:#fbe4e2; --luc:#1e7a3c; --luc-nen:#e2f3e6;
-  --vang-nen:#fdf2d6;
+  --do:#b3261e; --do-nen:#fbe8e6; --do-vien:#ecc3be; --luc:#1e7a3c; --luc-nen:#e4f3e7; --luc-vien:#bddcc6;
+  --vang:#8a6d1f; --vang-nen:#fdf3d8; --vang-vien:#e6c56e;
+  --bong:0 1px 2px rgba(47,82,51,.05),0 6px 20px rgba(47,82,51,.07);
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
-html,body{margin:0;padding:0}
-body{
-  font-family:'Be Vietnam Pro',system-ui,sans-serif;
-  background:var(--kem); color:var(--muc); font-size:15px; line-height:1.55;
-  padding-bottom:28px;
-}
-h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:700;margin:0;letter-spacing:-.01em}
-button,input{font-family:inherit;font-size:inherit;color:inherit}
+html,body{margin:0}
+body{font-family:'Be Vietnam Pro',system-ui,sans-serif;background:var(--kem);color:var(--muc);font-size:15px;line-height:1.5}
+h1,h2{font-family:'Fraunces',Georgia,serif;font-weight:700;margin:0;letter-spacing:-.01em}
+button{font:inherit;color:inherit}
+.wrap{max-width:1040px;margin:0 auto;padding:0 14px}
 
-header{background:var(--xanh);color:var(--kem);padding:calc(18px + env(safe-area-inset-top)) 18px 18px}
-header .wrap{max-width:1080px;margin:0 auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-header h1{font-size:22px;line-height:1.2}
-header p{margin:2px 0 0;font-size:13px;color:#c9d8c9}
-.trangthai-khoi{margin-left:auto;display:flex;gap:8px;align-items:center}
-.trangthai{font-size:12.5px;background:rgba(255,255,255,.12);padding:6px 12px;border-radius:99px;white-space:nowrap}
-.nut-tai{background:rgba(255,255,255,.14);color:var(--kem);border:none;border-radius:50%;width:34px;height:34px;font-size:17px;cursor:pointer;line-height:1;flex:none}
-.nut-tai:hover{background:rgba(255,255,255,.26)}
-.nut-tai.quay{animation:quay .8s linear infinite}
+/* ── đầu trang ── */
+.dau-trang{background:var(--xanh);color:var(--kem);padding:calc(14px + env(safe-area-inset-top)) 0 14px}
+.dau-trang .wrap{display:flex;align-items:center;gap:12px}
+.dau-trang .wrap > div:first-child{min-width:0}
+.dau-trang h1{font-size:20px;line-height:1.2;white-space:nowrap}
+.dau-trang p{margin:1px 0 0;font-size:12.5px;color:#c9d8c9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trang-thai{margin-left:auto;display:flex;align-items:center;gap:8px}
+.trang-thai span{font-size:12px;background:rgba(255,255,255,.12);padding:5px 11px;border-radius:99px;white-space:nowrap}
+.nut-tron{width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.14);color:var(--kem);font-size:18px;cursor:pointer;flex:none}
+.nut-tron.quay{animation:quay .8s linear infinite}
 @keyframes quay{to{transform:rotate(360deg)}}
+@media (max-width:420px){.dau-trang h1{font-size:18px}.trang-thai span{font-size:11px;padding:4px 9px}}
 
-main{max-width:1080px;margin:0 auto;padding:20px 16px 0}
+main{padding-top:14px}
 
-.buoc{background:var(--giay);border:1px solid var(--vien);border-radius:14px;margin-bottom:18px;overflow:hidden}
-.buoc>.dau{display:flex;align-items:baseline;gap:12px;padding:16px 18px;border-bottom:1px solid var(--vien);background:#fbf8ef}
-.buoc>.dau h2{font-size:17px}
-.buoc>.dau .ghi{font-size:13px;color:var(--mo);margin-left:auto}
-.than{padding:18px}
+/* ── nút ── */
+.nut{border:none;border-radius:12px;padding:12px 20px;min-height:46px;font-weight:600;cursor:pointer;background:var(--xanh);color:var(--kem);transition:transform .08s,filter .15s,opacity .15s}
+.nut:disabled{opacity:.45;cursor:not-allowed}
+.nut.phu{background:#fff;color:var(--xanh);border:1.5px solid var(--vien)}
+.nut:not(:disabled):active,.nut-tron:active{transform:scale(.96)}
+@media (hover:hover){.nut:not(:disabled):hover{filter:brightness(1.07)}}
+:focus-visible{outline:2.5px solid var(--gao);outline-offset:2px}
 
-.nut{background:var(--xanh);color:var(--kem);border:none;border-radius:10px;padding:11px 18px;font-weight:600;cursor:pointer;transition:background .15s}
-.nut:hover{background:var(--xanh-nhat)}
-.nut:disabled{background:#a9b3a9;cursor:not-allowed}
-.nut:focus-visible,input:focus-visible{outline:2.5px solid var(--gao);outline-offset:2px}
+.chip{display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:2px 10px;border-radius:99px;line-height:1.6;white-space:nowrap}
+.chip.do{background:var(--do);color:#fff}
+.chip.xanh{background:var(--luc);color:#fff}
 
-.tomtat{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.o-tt{flex:1 1 130px;background:#fbf8ef;border:1px solid var(--vien);border-radius:10px;padding:11px 13px}
-.o-tt b{display:block;font-family:'Fraunces',serif;font-size:24px;line-height:1.1}
-.o-tt span{font-size:12.5px;color:var(--mo)}
-.o-tt.co b{color:var(--do)}
+.canh{border-radius:12px;padding:11px 14px;font-size:13.5px;margin-bottom:12px;background:var(--vang-nen);border:1px solid var(--vang-vien)}
+.canh.loi{background:var(--do-nen);border-color:#ecbdb8}
+.canh.ok{background:var(--luc-nen);border-color:#b3d8bf}
+.canh b{display:block;margin-bottom:2px}
+.canh ul{margin:6px 0 0;padding-left:18px}
+.canh summary{cursor:pointer;font-weight:600}
+.canh .nut{margin-top:8px;min-height:38px;padding:7px 14px;font-size:14px}
 
-.canh{background:var(--vang-nen);border:1px solid #e6cf94;border-radius:10px;padding:12px 14px;font-size:13.5px;margin-bottom:14px}
-.canh.loi{background:var(--do-nen);border-color:#e8b6b1}
-.canh.ok{background:var(--luc-nen);border-color:#aed3ba}
-.canh b{display:block;margin-bottom:3px}
-.canh ul{margin:6px 0 0;padding-left:20px}
-details.canh summary{cursor:pointer;font-weight:600}
+/* ── tóm tắt ── */
+.tom-tat{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
+.o-tt{background:var(--giay);border:1px solid var(--vien);border-radius:12px;padding:8px 6px;text-align:center}
+.o-tt b{display:block;font-family:'Fraunces',serif;font-size:20px;line-height:1.15}
+.o-tt span{display:block;font-size:10.5px;line-height:1.25;color:var(--mo)}
+.o-tt.do b{color:var(--do)}.o-tt.xanh b{color:var(--luc)}.o-tt.vang b{color:var(--vang)}
+.o-tt.rong{opacity:.5}
 
-.congtac{display:flex;gap:8px;align-items:center;font-size:13.5px;color:var(--mo);margin-bottom:14px;cursor:pointer;width:max-content}
+/* ── danh sách món ── */
+.nhom{margin-bottom:18px}
+.nhom h2{font-size:17px;margin:0 2px 8px;display:flex;align-items:baseline;gap:8px}
+.nhom h2 small{font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;font-weight:500;color:var(--mo)}
+.mon-dau{display:none}
+.mon{display:grid;grid-template-columns:36px 1fr;gap:8px 12px;align-items:center;padding:14px;margin-bottom:10px;
+  background:var(--giay);border:1px solid var(--vien);border-radius:16px;transition:opacity .15s,border-color .15s,background .15s}
+.mon.do{background:var(--do-nen);border-color:var(--do-vien)}
+.mon.xanh{background:var(--luc-nen);border-color:var(--luc-vien)}
+.mon.can-xem{border:2px solid var(--vang-vien)}
+.mon.bo{opacity:.6}
+.tich{position:relative;width:30px;height:30px;cursor:pointer;align-self:start}
+.tich input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.tich span{position:absolute;inset:0;border:2px solid #b8b09c;border-radius:9px;background:#fff;transition:background .12s,border-color .12s,transform .1s}
+.tich input:checked+span{background:var(--xanh);border-color:var(--xanh)}
+.tich input:checked+span::after{content:'';position:absolute;left:9px;top:4px;width:7px;height:13px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg)}
+.tich input:active+span{transform:scale(.9)}
+.tich input:focus-visible+span{outline:2.5px solid var(--gao);outline-offset:2px}
+.mon-ten b{display:block;font-size:15px;line-height:1.3}
+.nguon{display:block;font-size:12px;color:var(--mo);margin-top:2px}
+.hang-gia{grid-column:2;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 18px}
+.o-gia > span{display:block;font-size:11.5px;color:var(--mo)}
+.cap{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+.cu{color:var(--mo);text-decoration:line-through;font-size:12.5px}
+.moi{font-weight:700}
+.mon.do .o-gia.doi .moi{color:var(--do)}
+.mon.xanh .o-gia.doi .moi{color:var(--luc)}
+.hang-gia .chip{margin-left:auto}
+.canh-nho{grid-column:2;font-size:12.5px;color:var(--vang);font-weight:600}
 
-table{width:100%;border-collapse:collapse;font-size:13.5px}
-th,td{padding:10px;text-align:left;border-bottom:1px solid #eee6d5;vertical-align:middle}
-th{background:#f4efe2;font-weight:600;font-size:12.5px;color:#4a5a4c}
-td.so,th.so{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-td.chon,th.chon{width:44px;text-align:center}
-input[type=checkbox]{width:18px;height:18px;accent-color:var(--xanh);cursor:pointer}
-.cuon{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--vien);border-radius:10px}
-tr.r-do{background:var(--do-nen)}
-.ten-mh{font-weight:600}
-.nguon{display:block;font-size:11.5px;color:var(--mo);margin-top:2px}
+details.gap{background:var(--giay);border:1px solid var(--vien);border-radius:14px;margin-bottom:10px}
+details.gap summary{padding:13px 16px;cursor:pointer;font-weight:600;font-size:14px;list-style:none;display:flex;align-items:center;gap:8px}
+details.gap summary::-webkit-details-marker{display:none}
+details.gap summary::before{content:'›';font-size:20px;line-height:1;transition:transform .15s;color:var(--mo)}
+details.gap[open] summary::before{transform:rotate(90deg)}
+.dong-gon{display:flex;gap:10px;padding:9px 16px;border-top:1px solid #eee6d4;font-size:14px}
+.dong-gon .phai{margin-left:auto;color:var(--mo);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dong-gon i{font-style:normal;font-size:12px;color:var(--mo)}
 
-.the{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11.5px;font-weight:600;white-space:nowrap}
-.the.do{background:var(--do);color:#fff}
-.the.giu{background:#e6e0cf;color:#5c6a5e}
+/* ── màn xong ── */
+.the{background:var(--giay);border:1px solid var(--vien);border-radius:16px;box-shadow:var(--bong);overflow:hidden}
+.xong{text-align:center;padding:26px 16px 10px}
+.dau-tich{width:64px;height:64px;border-radius:50%;background:var(--luc);color:#fff;font-size:34px;line-height:64px;margin:0 auto 12px;animation:bat .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bat{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.xong h2{font-size:21px}
+.xong p{margin:4px 0 0;color:var(--mo)}
+.ds-kq{margin:14px 0 0;padding:0;list-style:none}
+.ds-kq li{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid #eee6d4;font-size:14px}
+.ds-kq li.tieu-de{font-weight:700;font-size:13px;color:var(--mo);background:#faf6ea}
+.ds-kq .cham{width:10px;height:10px;border-radius:50%;flex:none}
+.ds-kq .cham.do{background:var(--do)}.ds-kq .cham.xanh{background:var(--luc)}
+.ds-kq .phai{margin-left:auto;font-variant-numeric:tabular-nums;text-align:right;font-size:13px}
+.hang-nut{padding:16px;display:flex;justify-content:center}
 
-.cap-gia{display:flex;flex-direction:column;align-items:flex-end;line-height:1.35}
-.mui{color:var(--mo);text-decoration:line-through;font-size:12px}
-.mui.an-di{visibility:hidden}
-.moi-gia{font-weight:700;color:var(--do)}
+/* ── chuyển màn ── */
+.man.vao-phai{animation:tuPhai .24s ease}
+.man.vao-trai{animation:tuTrai .24s ease}
+@keyframes tuPhai{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes tuTrai{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+.khung-xuong{height:84px;border-radius:16px;margin-bottom:10px;background:linear-gradient(100deg,#efe8d6 30%,#f7f2e6 50%,#efe8d6 70%);background-size:200% 100%;animation:song 1.2s infinite}
+@keyframes song{from{background-position:200% 0}to{background-position:-200% 0}}
 
-.trong{text-align:center;padding:30px 18px;color:var(--mo);font-size:14px}
+/* ── thanh dưới ── */
+.thanh-duoi{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,253,247,.96);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  border-top:1px solid var(--vien);padding:10px 0 calc(10px + env(safe-area-inset-bottom));box-shadow:0 -4px 18px rgba(47,82,51,.08)}
+.thanh-duoi .wrap{display:flex;align-items:center;gap:12px}
+.thanh-duoi .tt{flex:1;font-size:13.5px;color:var(--mo);min-width:0}
+.thanh-duoi .tt b{color:var(--muc)}
 
-.thanh-duoi{
-  position:fixed;left:0;right:0;bottom:0;background:var(--giay);
-  border-top:1px solid var(--vien);padding:12px 16px calc(12px + env(safe-area-inset-bottom));
-  z-index:20;box-shadow:0 -3px 16px rgba(47,82,51,.07)
+.bao{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));z-index:60;transform:translate(-50%,12px);background:var(--muc);color:#fff;
+  padding:10px 18px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:92vw;text-align:center}
+.bao.hien{opacity:1;transform:translate(-50%,0)}
+
+/* ══ MÁY TÍNH ══ */
+@media (min-width:760px){
+  .wrap{padding:0 20px}
+  .dau-trang h1{font-size:23px}
+  main{padding-top:20px}
+  .mon-dau,.mon{grid-template-columns:36px minmax(0,1fr) repeat(var(--k),150px) 150px}
+  .mon-dau{display:grid;gap:12px;padding:0 16px 6px;font-size:12px;color:var(--mo);font-weight:600}
+  .mon-dau span:nth-child(n+3){text-align:right}
+  .mon{padding:10px 16px;margin-bottom:6px;border-radius:12px}
+  .hang-gia{display:contents}
+  .o-gia{text-align:right}
+  .o-gia > span{display:none}
+  .cap{justify-content:flex-end}
+  .hang-gia .chip{justify-self:end;margin-left:0}
+  .canh-nho{grid-column:2/-1}
+  .bao{bottom:92px}
 }
-.thanh-duoi .in{max-width:1080px;margin:0 auto;width:100%;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.thanh-duoi .tt{font-size:13px;color:var(--mo);flex:1 1 auto;min-width:120px}
-
-details.hd{margin:4px 0 24px;border:1px solid var(--vien);border-radius:10px;background:#fbf8ef}
-details.hd summary{padding:11px 15px;cursor:pointer;font-weight:600;font-size:14px}
-details.hd .noi{padding:0 15px 15px;font-size:13.5px;color:#41503f}
-details.hd code{background:#efe9d9;padding:1px 5px;border-radius:4px;font-size:12.5px}
-pre.lenh{background:#f2ecdc;border:1px solid var(--vien);border-radius:9px;padding:12px;font-size:12.5px;white-space:pre-wrap;word-break:break-word;max-height:210px;overflow:auto;margin:8px 0 0}
-
-.bao{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));background:var(--xanh);color:var(--kem);padding:11px 20px;border-radius:99px;font-size:14px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center}
-.bao.hien{opacity:1}
-
-@media (max-width:700px){
-  header h1{font-size:19px}
-  .trangthai-khoi{margin-left:0;width:100%;order:3}
-  .trangthai{flex:1;text-align:center}
-  main{padding:14px 11px 0}
-  .buoc>.dau{padding:13px 14px;flex-wrap:wrap}
-  .buoc>.dau .ghi{width:100%;margin:2px 0 0;font-size:12.5px}
-  .than{padding:14px 12px}
-  .o-tt b{font-size:20px}
-
-  /* Bảng → thẻ xếp dọc */
-  .cuon{border:none;border-radius:0;overflow:visible}
-  table.the-doc thead{display:none}
-  table.the-doc,table.the-doc tbody,table.the-doc tr,table.the-doc td{display:block;width:100%}
-  table.the-doc tr{border:1px solid var(--vien);border-radius:12px;margin-bottom:10px;padding:9px 12px;background:var(--giay);position:relative}
-  table.the-doc tr.r-do{background:var(--do-nen);border-color:#e8b6b1}
-  table.the-doc td{border:none;padding:5px 0;display:flex;gap:12px;align-items:center;justify-content:space-between;text-align:right;font-size:14px}
-  table.the-doc td::before{content:attr(data-nhan);font-size:12.5px;color:var(--mo);text-align:left;flex:0 0 auto;white-space:nowrap}
-  table.the-doc td:not([data-nhan])::before{content:none}
-  table.the-doc td.chinh{display:block;text-align:left;border-bottom:1px solid rgba(0,0,0,.07);padding:0 34px 9px 0;margin-bottom:3px}
-  table.the-doc td.chon{position:absolute;top:9px;right:10px;width:auto;padding:0}
-  table.the-doc .cap-gia{flex-direction:row;align-items:baseline;gap:8px}
-  table.the-doc .mui.an-di{display:none}
-}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<header>
+<header class="dau-trang">
   <div class="wrap">
     <div>
-      <h1>Đồng Bộ Giá</h1>
+      <h1>Đồng bộ giá</h1>
       <p>Retail → Menu Bảy Ích 2 · SanPham Vân Bao Bì</p>
     </div>
-    <div class="trangthai-khoi">
-      <span class="trangthai" id="tt-tai">Đang tải…</span>
-      <button class="nut-tai" id="nut-tai" title="Tính lại từ dữ liệu mới nhất" aria-label="Tải lại">↻</button>
+    <div class="trang-thai">
+      <span id="tt">Đang tải…</span>
+      <button class="nut-tron" id="nut-tai" aria-label="Tính lại từ giá mới nhất" title="Tính lại từ giá mới nhất">↻</button>
     </div>
   </div>
 </header>
 
-<main>
-  <div class="tomtat" id="tomtat"></div>
-  <div id="canh"></div>
-  <div id="ket-qua"></div>
+<main class="wrap">
+  <div id="tb-loi"></div>
 
-  <label class="congtac" id="congtac" hidden>
-    <input type="checkbox" id="hien-tat-ca"> Hiện cả những món đã khớp giá
-  </label>
-
-  <section class="buoc" id="khoi-Menu" hidden>
-    <div class="dau"><h2>Bảy Ích 2 · tab Menu</h2><span class="ghi">Giá = Giá Làm Tròn của Retail</span></div>
-    <div class="than"><div class="cuon"><table class="the-doc"><thead><tr>
-      <th class="chon"><input type="checkbox" data-chon-het="Menu" aria-label="Chọn tất cả Menu"></th>
-      <th>Mặt hàng</th><th class="so">Giá</th><th style="width:120px">Kết luận</th>
-    </tr></thead><tbody></tbody></table></div></div>
+  <!-- MÀN 1 — kiểm tra -->
+  <section class="man" id="man1">
+    <div id="tb-dl"></div>
+    <div class="tom-tat" id="tom-tat"></div>
+    <div id="tb-ghi"></div>
+    <div id="ds"><div class="khung-xuong"></div><div class="khung-xuong"></div><div class="khung-xuong"></div></div>
   </section>
 
-  <section class="buoc" id="khoi-SanPham" hidden>
-    <div class="dau"><h2>Vân Bao Bì · tab SanPham</h2><span class="ghi">Giá Lẻ = Giá Làm Tròn · Giá Sỉ = Giá Nhập Lẻ</span></div>
-    <div class="than"><div class="cuon"><table class="the-doc"><thead><tr>
-      <th class="chon"><input type="checkbox" data-chon-het="SanPham" aria-label="Chọn tất cả SanPham"></th>
-      <th>Mặt hàng</th><th class="so">Giá Lẻ</th><th class="so">Giá Sỉ</th><th style="width:120px">Kết luận</th>
-    </tr></thead><tbody></tbody></table></div></div>
+  <!-- MÀN 2 — xong -->
+  <section class="man" id="man2" hidden>
+    <div class="the" id="ket-qua"></div>
   </section>
-
-  <details class="hd">
-    <summary>Cách hoạt động</summary>
-    <div class="noi">
-      <p>Trang đọc tab <b>Retail</b> và bảng ánh xạ ở tab <b>DongBo</b> (sheet bayich2), tính giá mới cho từng món rồi so với giá đang có trong tab Menu (bayich2) và tab SanPham (vanbaobi). Món nào lệch sẽ hiện ở đây để bạn duyệt trước khi ghi.</p>
-      <ul style="padding-left:20px;margin:8px 0">
-        <li>Món ghép: cột Nguồn nối bằng dấu <code>+</code>, giá = tổng giá làm tròn các thành phần.</li>
-        <li>Món nửa ký: cột Hệ số ghi <code>0,5</code>, giá = một nửa rồi làm tròn 1.000.</li>
-        <li>Thêm món / đổi tên: sửa thẳng trong tab DongBo, không cần sửa code.</li>
-        <li>Máy chủ tự tính lại giá lúc ghi, và chỉ ghi khi số liệu vẫn y như lúc bạn xem trước.</li>
-      </ul>
-    </div>
-  </details>
 </main>
 
 <div class="thanh-duoi" id="thanh-duoi" hidden>
-  <div class="in">
+  <div class="wrap">
     <div class="tt" id="tt-duoi"></div>
-    <button class="nut" id="nut-ghi">Ghi vào 2 sheet</button>
+    <button class="nut" id="nut-ghi">Ghi</button>
   </div>
 </div>
 
-<div class="bao" id="bao"></div>
+<div class="bao" id="bao" role="status" aria-live="polite"></div>
 
 <script>
 /* ══════════════════════════════════════════════════════════
-   CAUHINH — link /exec của Apps Script "bayich2_dongbogia"
+   Ánh xạ tên, bước làm tròn, ngưỡng cảnh báo, màu… nằm trong tab DongBo (sheet bayich2)
+   và được máy chủ tính sẵn. Trong code chỉ còn link Apps Script và tên hiển thị 2 tiệm.
    ══════════════════════════════════════════════════════════ */
-const CAUHINH = {
-  API_DONGBO: 'https://script.google.com/macros/s/AKfycbz767Ti7iftH6thPYqdMfr7YqDnT4ntOwZT5vMj9Ox7T6v4FCJwrrWsx8FLtp0JQfVy/exec',
-};
-
-const DICH = {
-  Menu:    { cot: ['Giá'] },
-  SanPham: { cot: ['Giá Lẻ', 'Giá Sỉ'] },
-};
+const API = 'https://script.google.com/macros/s/AKfycbz767Ti7iftH6thPYqdMfr7YqDnT4ntOwZT5vMj9Ox7T6v4FCJwrrWsx8FLtp0JQfVy/exec';
+const TEN_DICH = { Menu: 'Bảy Ích 2 · Menu', SanPham: 'Vân Bao Bì · SanPham' };
 
 /* ══════════════════ tiện ích ══════════════════ */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-const dinh = n => n == null ? '—' : Math.round(n).toLocaleString('vi-VN');
-function thoat(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const dinh = n => n == null || !isFinite(n) ? '—' : Math.round(n).toLocaleString('vi-VN');
+const thoat = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const giamChuyenDong = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rung = p => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
+const ngu = ms => new Promise(r => setTimeout(r, ms));
+const khoaMon = m => m.dich + '|' + m.ten;
 
 let hgBao;
-function bao(msg){ const b=$('#bao'); b.textContent=msg; b.classList.add('hien'); clearTimeout(hgBao); hgBao=setTimeout(()=>b.classList.remove('hien'),2600); }
+function bao(msg) { const b = $('#bao'); b.textContent = msg; b.classList.add('hien'); clearTimeout(hgBao); hgBao = setTimeout(() => b.classList.remove('hien'), 2600); }
+function chuaCho() { const t = $('#thanh-duoi'); document.body.style.paddingBottom = (t.hidden ? 24 : t.getBoundingClientRect().height + 24) + 'px'; }
+addEventListener('resize', chuaCho);
 
-function chuaChoThanhDuoi(){
-  const t=$('#thanh-duoi');
-  const cao = t.hidden ? 0 : t.getBoundingClientRect().height;
-  document.body.style.paddingBottom = (cao ? cao+18 : 28)+'px';
+/* ── gọi Apps Script ──
+   Google thỉnh thoảng trả trang "không thể mở tệp" (404) ở bước chuyển hướng dù script ĐÃ CHẠY XONG.
+   Đọc thì thử lại; ghi thì không gửi lại mà đọc lại để xác minh (xacMinhSauLoi). */
+class LoiDuongTruyen extends Error {}
+function bocChu(t) {
+  try { const d = new DOMParser().parseFromString(t, 'text/html'); d.querySelectorAll('script,style,noscript').forEach(n => n.remove()); return (d.body ? d.body.textContent : '').replace(/\s+/g, ' ').trim(); }
+  catch { return ''; }
 }
-addEventListener('resize', chuaChoThanhDuoi);
-
-/* Bóc chữ người đọc được ra khỏi trang HTML mà Google trả về */
-function bocChu(t){
-  try{
-    const d=new DOMParser().parseFromString(t,'text/html');
-    d.querySelectorAll('script,style,noscript').forEach(n=>n.remove());
-    return (d.body?d.body.textContent:'').replace(/\s+/g,' ').trim();
-  }catch{ return ''; }
-}
-function chuanDoan(t){
-  const s=(bocChu(t)+' '+t).toLowerCase();
-  if(s.includes('accounts.google.com')||s.includes('servicelogin')||s.includes('sign in'))
-    return 'Google đang bắt đăng nhập → bản triển khai chưa mở cho "Bất kỳ ai".';
-  if(s.includes('you need permission')||s.includes('bạn cần có quyền')||s.includes('không có quyền'))
-    return 'Không đủ quyền chạy → kiểm tra "Thực thi với" và "Ai có quyền truy cập".';
-  if(s.includes('script function not found'))
-    return 'Bản triển khai đang chạy code cũ → tạo Phiên bản mới.';
-  if(s.includes('authorization')||s.includes('ủy quyền')||s.includes('cấp quyền'))
-    return 'Script chưa được cấp quyền → mở Apps Script, chạy hàm caiDat một lần và bấm Cho phép.';
-  if(s.includes('<!doctype')||s.includes('<html'))
-    return 'Apps Script trả về trang HTML thay vì JSON.';
+function chuanDoan(t) {
+  const s = (bocChu(t) + ' ' + t).toLowerCase();
+  if (s.includes('accounts.google.com') || s.includes('servicelogin') || s.includes('sign in')) return 'Google đang bắt đăng nhập — bản triển khai chưa mở cho "Bất kỳ ai".';
+  if (s.includes('you need permission') || s.includes('không có quyền')) return 'Apps Script chưa đủ quyền chạy.';
+  if (s.includes('script function not found')) return 'Bản triển khai đang chạy code cũ — cần tạo phiên bản mới.';
+  if (s.includes('không thể mở tệp') || s.includes('unable to open the file')) return 'Google tạm thời không phản hồi (lỗi phía Google).';
+  if (s.includes('<!doctype') || s.includes('<html')) return 'Apps Script trả về trang lỗi thay vì dữ liệu.';
   return '';
 }
-async function docJSON(r){
-  const t=await r.text();
-  try{ return JSON.parse(t); }
-  catch{
-    const e=new Error(chuanDoan(t)||('Apps Script trả về nội dung lạ: '+t.slice(0,150)));
-    e.tho=t.slice(0,400); throw e;
-  }
+async function docJSON(r) {
+  const t = await r.text();
+  try { return JSON.parse(t); }
+  catch { throw new LoiDuongTruyen(chuanDoan(t) || 'Apps Script trả về nội dung lạ.'); }
 }
-async function goi(payload){
+async function layDuLieu() {
+  let loi;
+  for (let lan = 0; lan < 3; lan++) {
+    if (lan) await ngu(lan * 800);
+    try { return await docJSON(await fetch(API + '?viec=xemTruoc&t=' + Date.now())); }
+    catch (e) { loi = e instanceof LoiDuongTruyen ? e : new LoiDuongTruyen('Mất kết nối tới Apps Script. Kiểm tra mạng rồi thử lại.'); }
+  }
+  throw loi;
+}
+async function goi(payload) {
   let r;
-  try{
-    r=await fetch(CAUHINH.API_DONGBO,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
-  }catch{ throw new Error('Không gọi được Apps Script. Kiểm tra mạng và link /exec.'); }
+  try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); }
+  catch { throw new LoiDuongTruyen('Mất kết nối tới Apps Script.'); }
   return docJSON(r);
 }
 
 /* ══════════════════ dữ liệu ══════════════════ */
-let DL = null;            // {thayDoi:[…], canhBao:[…], thoiGian}
-let CHON = new Set();     // "dich|ten" các món đang tích
-let daChinhTay = false;   // người dùng đã tự bỏ/tích → giữ nguyên lựa chọn khi vẽ lại
+let DL = null;          // {mon, canhBao, nguongNhay, thoiGian}
+let CHON = new Set();   // khoá "dich|ten" các món đang tích
+let man = 1, dangGhi = false, lanTai = 0;
 
-/* Gom các ô của cùng một món thành 1 dòng: SanPham có 2 cột giá */
-function nhomMon(dich){
-  const m = new Map();
-  (DL?.thayDoi||[]).filter(t=>t.dich===dich).forEach(t=>{
-    const k = dich+'|'+t.ten;
-    if(!m.has(k)) m.set(k,{khoa:k, dich, ten:t.ten, nguon:t.nguon, heSo:t.heSo, o:{}});
-    m.get(k).o[t.cot]=t;
-  });
-  return [...m.values()].map(g=>({...g, doi:Object.values(g.o).some(t=>t.doi)}));
-}
+const coDoi = m => m.trangThai === 'do' || m.trangThai === 'xanh';
+const canXem = m => coDoi(m) && DL.nguongNhay && m.nhay * 100 >= DL.nguongNhay;
+const oCuaMon = m => Object.entries(m.gia).filter(([, g]) => g.doi).map(([cot, g]) => ({ dich: m.dich, ten: m.ten, cot, cu: g.cu, moi: g.moi }));
+const monDaChon = () => (DL?.mon || []).filter(m => coDoi(m) && CHON.has(khoaMon(m)));
 
-async function napXemTruoc(){
-  const tt=$('#tt-tai');
-  if(!CAUHINH.API_DONGBO){
-    tt.textContent='Chưa cấu hình';
-    $('#canh').innerHTML='<div class="canh loi"><b>Chưa điền link Apps Script</b>Sửa <code>CAUHINH.API_DONGBO</code> trong file index.html.</div>';
-    return;
-  }
-  tt.textContent='Đang tính…';
-  try{
-    const r=await fetch(CAUHINH.API_DONGBO+'?viec=xemTruoc&t='+Date.now());
-    const j=await docJSON(r);
-    if(!j.ok) throw new Error(j.loi||'Apps Script báo lỗi');
-    DL=j;
-    if(!daChinhTay) CHON=new Set([...nhomMon('Menu'),...nhomMon('SanPham')].filter(g=>g.doi).map(g=>g.khoa));
-    else CHON=new Set([...CHON].filter(k=>[...nhomMon('Menu'),...nhomMon('SanPham')].some(g=>g.khoa===k&&g.doi)));
-    tt.textContent='Tính lúc '+new Date(j.thoiGian).toLocaleTimeString('vi-VN');
+async function napDuLieu(chonLai = true) {
+  const lan = ++lanTai, nut = $('#nut-tai');
+  nut.classList.add('quay');
+  try {
+    const j = await layDuLieu();
+    if (!j.ok) throw new Error(j.loi || 'Apps Script báo lỗi.');
+    if (!Array.isArray(j.mon)) throw new Error('Apps Script đang chạy bản cũ — cần deploy phiên bản mới.');
+    if (lan !== lanTai) return false;
+    const cu = CHON;
+    DL = j;
+    CHON = new Set(j.mon.filter(m => coDoi(m) && (chonLai ? !canXem(m) : cu.has(khoaMon(m)))).map(khoaMon));
+    $('#tb-loi').innerHTML = '';
+    $('#tt').textContent = 'Tính lúc ' + new Date(j.thoiGian).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     ve();
-  }catch(e){
-    tt.textContent='Không tải được';
-    $('#canh').innerHTML=`<div class="canh loi"><b>Không tính được thay đổi</b>${thoat(e.message)}
-      ${e.tho?`<details style="margin-top:8px"><summary style="cursor:pointer;font-size:12.5px">Xem nội dung trả về</summary><pre class="lenh">${thoat(e.tho)}</pre></details>`:''}</div>`;
+    return true;
+  } catch (e) {
+    if (lan !== lanTai) return false;
+    $('#tt').textContent = 'Chưa tải được';
+    if (!DL) $('#ds').innerHTML = '';
+    $('#tb-loi').innerHTML = `<div class="canh loi"><b>Không tính được thay đổi</b>${thoat(e.message)}${e instanceof LoiDuongTruyen ? ' Đã tự thử 3 lần — đợi ít giây rồi bấm Thử lại.' : ''}<br><button class="nut" data-thu-lai>Thử lại</button></div>`;
+    capNhatThanh();
+    return false;
+  } finally {
+    if (lan === lanTai) nut.classList.remove('quay');
   }
 }
 
-/* ══════════════════ vẽ ══════════════════ */
-function oGia(t){
-  if(!t) return '<span class="mui">—</span>';
-  return `<div class="cap-gia">
-    <span class="mui${t.doi?'':' an-di'}">${dinh(t.cu)}</span>
-    <span class="${t.doi?'moi-gia':''}">${dinh(t.moi)}</span></div>`;
+/* ══════════════════ MÀN 1 — kiểm tra ══════════════════ */
+function chuNguon(m) {
+  const hs = m.heSo !== 1 ? (m.heSo === 0.5 ? '½ × ' : String(m.heSo).replace('.', ',') + ' × ') : '';
+  if (m.nguon.length > 1) return '= ' + hs + m.nguon.join(' + ');
+  if (hs) return hs + m.nguon[0];
+  return m.nguon[0] !== m.ten ? '← ' + m.nguon[0] : '';
 }
-function chuNguon(g){
-  const heSo = g.heSo!==1 ? (g.heSo===0.5 ? '½ × ' : String(g.heSo).replace('.',',')+' × ') : '';
-  if(g.nguon.length>1) return '= '+heSo+g.nguon.join(' + ');
-  if(heSo) return heSo+g.nguon[0];
-  if(g.nguon[0]!==g.ten) return '← '+g.nguon[0];
-  return '';
+function htmlMon(m) {
+  const k = khoaMon(m), chon = CHON.has(k), xem = canXem(m), n = chuNguon(m);
+  return `<div class="mon ${m.trangThai}${xem ? ' can-xem' : ''}${chon ? '' : ' bo'}">
+    <label class="tich"><input type="checkbox" data-chon="${thoat(k)}" ${chon ? 'checked' : ''} aria-label="Ghi ${thoat(m.ten)}"><span></span></label>
+    <div class="mon-ten"><b>${thoat(m.ten)}</b>${n ? `<span class="nguon">${thoat(n)}</span>` : ''}</div>
+    <div class="hang-gia">
+      ${Object.entries(m.gia).map(([cot, g]) => `<div class="o-gia${g.doi ? ' doi' : ''}"><span>${thoat(cot)}</span>
+        <div class="cap">${g.doi ? `<span class="cu">${dinh(g.cu)}</span>` : ''}<span class="moi">${dinh(g.moi)}</span></div></div>`).join('')}
+      <span class="chip ${m.trangThai}">${m.trangThai === 'do' ? 'Đổi giá bán' : 'Chỉ đổi giá sỉ'}</span>
+    </div>
+    ${xem ? `<div class="canh-nho">⚠ Giá đổi ${Math.round(m.nhay * 100)}% — kiểm tra lại Retail trước khi ghi</div>` : ''}
+  </div>`;
 }
+function ve() {
+  const mon = DL.mon, loi = DL.canhBao.filter(c => c.loai === 'loi'), luuY = DL.canhBao.filter(c => c.loai !== 'loi');
+  const dem = t => mon.filter(m => m.trangThai === t).length;
+  const o = (so, chu, lop) => `<div class="o-tt ${lop}${so ? '' : ' rong'}"><b>${so}</b><span>${chu}</span></div>`;
+  $('#tom-tat').innerHTML = o(dem('do'), 'Đổi giá bán', 'do') + o(dem('xanh'), 'Chỉ đổi giá sỉ', 'xanh')
+    + o(mon.filter(canXem).length, 'Cần xem lại', 'vang') + o(dem('giu'), 'Đã khớp', '') + o(loi.length, 'Lỗi ánh xạ', loi.length ? 'do' : '');
 
-function ve(){
-  const hienHet=$('#hien-tat-ca').checked;
-  let tongDoi=0, tongKhop=0;
+  $('#tb-dl').innerHTML =
+    (loi.length ? `<details class="canh loi" open><summary>${loi.length} dòng không đồng bộ được — sửa trong tab DongBo</summary><ul>${loi.map(x => `<li>${thoat(x.noiDung)}</li>`).join('')}</ul></details>` : '')
+    + (luuY.length ? `<details class="canh"><summary>${luuY.length} lưu ý</summary><ul>${luuY.map(x => `<li>${thoat(x.noiDung)}</li>`).join('')}</ul></details>` : '');
 
-  Object.keys(DICH).forEach(dich=>{
-    const ds=nhomMon(dich), doi=ds.filter(g=>g.doi);
-    tongDoi+=doi.length; tongKhop+=ds.length-doi.length;
-    const hien = hienHet ? ds : doi;
-    const khoi=$('#khoi-'+dich);
-    khoi.hidden = !hien.length;
-    const soCot = DICH[dich].cot.length+3;
-    khoi.querySelector('tbody').innerHTML = hien.map(g=>{
-      const n=chuNguon(g);
-      return `<tr class="${g.doi?'r-do':''}">
-        <td class="chon">${g.doi?`<input type="checkbox" data-chon="${thoat(g.khoa)}" ${CHON.has(g.khoa)?'checked':''} aria-label="Ghi ${thoat(g.ten)}">`:''}</td>
-        <td class="chinh"><span class="ten-mh">${thoat(g.ten)}</span>${n?`<span class="nguon">${thoat(n)}</span>`:''}</td>
-        ${DICH[dich].cot.map(c=>`<td class="so" data-nhan="${thoat(c)}">${oGia(g.o[c])}</td>`).join('')}
-        <td data-nhan="Kết luận">${g.doi?'<span class="the do">Đổi giá</span>':'<span class="the giu">Đã khớp</span>'}</td>
-      </tr>`;
-    }).join('') || `<tr><td colspan="${soCot}"><div class="trong">Không có món nào.</div></td></tr>`;
-    const het=khoi.querySelector('[data-chon-het]');
-    het.checked = doi.length>0 && doi.every(g=>CHON.has(g.khoa));
-    het.disabled = !doi.length;
-  });
-
-  const loi=(DL.canhBao||[]).filter(c=>c.loai==='loi'), luuY=(DL.canhBao||[]).filter(c=>c.loai!=='loi');
-  const dem=d=>nhomMon(d).filter(g=>g.doi).length;
-  $('#tomtat').innerHTML=`
-    <div class="o-tt${dem('Menu')?' co':''}"><b>${dem('Menu')}</b><span>món đổi ở Menu</span></div>
-    <div class="o-tt${dem('SanPham')?' co':''}"><b>${dem('SanPham')}</b><span>món đổi ở Vân Bao Bì</span></div>
-    <div class="o-tt"><b>${tongKhop}</b><span>món đã khớp</span></div>
-    <div class="o-tt${loi.length?' co':''}"><b>${loi.length}</b><span>lỗi ánh xạ</span></div>`;
-
-  let c='';
-  if(loi.length) c+=`<div class="canh loi"><b>${loi.length} dòng không đồng bộ được — kiểm tra tab DongBo</b><ul>${loi.map(x=>`<li>${thoat(x.noiDung)}</li>`).join('')}</ul></div>`;
-  if(luuY.length) c+=`<details class="canh"><summary>${luuY.length} lưu ý</summary><ul>${luuY.map(x=>`<li>${thoat(x.noiDung)}</li>`).join('')}</ul></details>`;
-  if(!tongDoi && !loi.length) c+=`<div class="canh ok"><b>Tất cả đã khớp với Retail</b>Menu Bảy Ích 2 và bảng giá Vân Bao Bì đang đúng giá — không cần ghi gì.</div>`;
-  $('#canh').innerHTML=c;
-
-  $('#congtac').hidden = !(tongDoi+tongKhop);
-  capNhatThanhDuoi();
-}
-
-function oDuocGhi(){
-  const ds=[];
-  Object.keys(DICH).forEach(dich=>nhomMon(dich).forEach(g=>{
-    if(!g.doi||!CHON.has(g.khoa)) return;
-    Object.values(g.o).forEach(t=>{ if(t.doi) ds.push({dich:t.dich, ten:t.ten, cot:t.cot, cu:t.cu, moi:t.moi}); });
-  }));
-  return ds;
-}
-function capNhatThanhDuoi(){
-  const soMon=[...CHON].length, coDoi=[...nhomMon('Menu'),...nhomMon('SanPham')].some(g=>g.doi);
-  $('#thanh-duoi').hidden=!coDoi;
-  $('#tt-duoi').textContent = soMon ? `${soMon} món · ${oDuocGhi().length} ô giá sẽ được ghi` : 'Chưa chọn món nào';
-  $('#nut-ghi').disabled=!soMon;
-  chuaChoThanhDuoi();
-}
-
-/* ══════════════════ sự kiện ══════════════════ */
-document.addEventListener('change',e=>{
-  const el=e.target;
-  if(el.dataset.chon){
-    daChinhTay=true;
-    el.checked ? CHON.add(el.dataset.chon) : CHON.delete(el.dataset.chon);
-    ve(); return;
+  let h = '';
+  for (const dich of Object.keys(TEN_DICH)) {
+    const ds = mon.filter(m => m.dich === dich && coDoi(m));
+    if (!ds.length) continue;
+    const cot = Object.keys(ds[0].gia);
+    h += `<section class="nhom" style="--k:${cot.length}"><h2>${thoat(TEN_DICH[dich])} <small>${ds.length} món đổi</small></h2>
+      <div class="mon-dau"><span></span><span>Món</span>${cot.map(c => `<span>${thoat(c)}</span>`).join('')}<span></span></div>
+      ${ds.map(htmlMon).join('')}</section>`;
   }
-  if(el.dataset.chonHet){
-    daChinhTay=true;
-    nhomMon(el.dataset.chonHet).filter(g=>g.doi).forEach(g=>el.checked?CHON.add(g.khoa):CHON.delete(g.khoa));
-    ve(); return;
-  }
-  if(el.id==='hien-tat-ca' && DL) ve();
+  const giu = mon.filter(m => m.trangThai === 'giu');
+  if (!h && !loi.length) h = '<div class="canh ok"><b>Tất cả đã khớp với Retail</b>Menu Bảy Ích 2 và bảng giá Vân Bao Bì đang đúng giá — không cần ghi gì.</div>';
+  if (giu.length) h += `<details class="gap"><summary>Đã khớp (${giu.length})</summary>${giu.map(m =>
+    `<div class="dong-gon"><span>${thoat(m.ten)} <i>${thoat(TEN_DICH[m.dich] || m.dich)}</i></span><span class="phai">${Object.values(m.gia).map(g => dinh(g.moi)).join(' · ')}</span></div>`).join('')}</details>`;
+  $('#ds').innerHTML = h;
+  capNhatThanh();
+}
+
+$('#ds').addEventListener('change', e => {
+  const el = e.target; if (el.dataset.chon === undefined) return;
+  el.checked ? CHON.add(el.dataset.chon) : CHON.delete(el.dataset.chon);
+  el.closest('.mon').classList.toggle('bo', !el.checked);
+  rung(8); capNhatThanh();
 });
 
-$('#nut-tai').onclick=async()=>{
-  const b=$('#nut-tai'); b.classList.add('quay');
-  $('#ket-qua').innerHTML='';
-  await napXemTruoc();
-  b.classList.remove('quay');
-};
-
-$('#nut-ghi').onclick=async()=>{
-  const nut=$('#nut-ghi'), chon=oDuocGhi();
-  if(!chon.length) return;
-  nut.disabled=true; nut.textContent='Đang ghi…';
-  const kq=$('#ket-qua');
-  try{
-    const r=await goi({hanhDong:'dongBo', chon});
-    if(!r.ok) throw new Error(r.loi||'Apps Script báo lỗi');
-    const ten=d=>d==='Menu'?'Menu':'Vân Bao Bì';
-    let h=`<div class="canh ok"><b>Đã ghi ${r.daGhi.length} ô giá</b>`;
-    if(r.daGhi.length) h+=`<ul>${r.daGhi.map(x=>`<li>${ten(x.dich)} · ${thoat(x.ten)} · ${thoat(x.cot)}: ${dinh(x.cu)} → <b style="display:inline">${dinh(x.moi)}</b></li>`).join('')}</ul>`;
-    h+='</div>';
-    if(r.boQua.length) h+=`<div class="canh"><b>Bỏ qua ${r.boQua.length} ô</b><ul>${r.boQua.map(x=>`<li>${ten(x.dich)} · ${thoat(x.ten)} · ${thoat(x.cot)}: ${thoat(x.lyDo)}</li>`).join('')}</ul>Kiểm tra lại danh sách bên dưới (đã tính lại theo số mới nhất).</div>`;
-    kq.innerHTML=h;
-    bao(`Đã ghi ${r.daGhi.length} ô giá`);
-    daChinhTay=false;
-    if(r.xemTruoc&&r.xemTruoc.ok){
-      DL=r.xemTruoc;
-      CHON=new Set([...nhomMon('Menu'),...nhomMon('SanPham')].filter(g=>g.doi).map(g=>g.khoa));
-      $('#tt-tai').textContent='Tính lúc '+new Date(DL.thoiGian).toLocaleTimeString('vi-VN');
-      ve();
-    } else await napXemTruoc();
-    kq.scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(e){
-    kq.innerHTML=`<div class="canh loi"><b>Ghi không thành công</b>${thoat(e.message)}
-      ${e.tho?`<details style="margin-top:8px"><summary style="cursor:pointer;font-size:12.5px">Xem nội dung trả về</summary><pre class="lenh">${thoat(e.tho)}</pre></details>`:''}</div>`;
-    kq.scrollIntoView({behavior:'smooth',block:'start'});
-  }finally{
-    nut.textContent='Ghi vào 2 sheet';
-    capNhatThanhDuoi();
+function capNhatThanh() {
+  const thanh = $('#thanh-duoi'), nut = $('#nut-ghi');
+  const coGhi = man === 1 && DL && DL.mon.some(coDoi);
+  thanh.hidden = !coGhi;
+  if (coGhi) {
+    const ds = monDaChon(), soO = ds.reduce((s, m) => s + oCuaMon(m).length, 0);
+    $('#tt-duoi').innerHTML = ds.length ? `<b>${ds.length}</b> món · ${soO} ô giá` : 'Chưa chọn món nào';
+    nut.textContent = dangGhi ? 'Đang ghi…' : `Ghi ${ds.length || ''} món`.replace('  ', ' ');
+    nut.disabled = !ds.length || dangGhi;
   }
-};
+  chuaCho();
+}
 
-chuaChoThanhDuoi();
-napXemTruoc();
+/* ══════════════════ ghi ══════════════════ */
+async function ghi() {
+  const ds = monDaChon();
+  if (!ds.length || dangGhi) return;
+  const chon = ds.flatMap(oCuaMon);
+  dangGhi = true; capNhatThanh();
+  $('#tb-ghi').innerHTML = '';
+  try {
+    let r;
+    try { r = await goi({ hanhDong: 'dongBo', chon }); }
+    catch (e) { if (!(e instanceof LoiDuongTruyen)) throw e; r = await xacMinhSauLoi(ds, chon, e); }
+    if (r.xemTruoc?.ok) DL = r.xemTruoc;
+    if (!r.ok) { const e = new Error(r.loi || 'Apps Script báo lỗi.'); e.boQua = r.boQua; throw e; }
+    rung([20, 50, 20]);
+    veKetQua(r);
+    sangMan(2);
+  } catch (e) {
+    if (e.xemTruoc) DL = e.xemTruoc;
+    if (DL) { CHON = new Set([...CHON].filter(k => DL.mon.some(m => khoaMon(m) === k && coDoi(m)))); ve(); }
+    const bq = (e.boQua || []).map(x => `<li>${thoat(x.ten)}${x.cot ? ' · ' + thoat(x.cot) : ''}: ${thoat(x.lyDo)}</li>`).join('');
+    $('#tb-ghi').innerHTML = `<div class="canh loi"><b>Chưa ghi xong</b>${thoat(e.message)}${bq ? `<ul>${bq}</ul>` : ''}<br><button class="nut" data-so-lai>Tính lại</button></div>`;
+    $('#tb-ghi').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } finally {
+    dangGhi = false; capNhatThanh();
+  }
+}
+/* Không nhận được trả lời hợp lệ: đọc lại, ô nào đã mang giá mới là đã ghi. KHÔNG gửi lại lệnh ghi. */
+async function xacMinhSauLoi(ds, chon, loiGoc) {
+  $('#nut-ghi').textContent = 'Đang kiểm tra lại…';
+  let j;
+  try { j = await layDuLieu(); } catch {}
+  if (!j?.ok || !Array.isArray(j.mon)) throw new Error(loiGoc.message + ' Chưa kiểm tra lại được — bấm "Tính lại" để biết đã ghi chưa.');
+  const hienTai = new Map(j.mon.map(m => [khoaMon(m), m]));
+  const vao = chon.filter(c => hienTai.get(c.dich + '|' + c.ten)?.gia[c.cot]?.cu === c.moi);
+  if (vao.length === chon.length) {
+    const daGhi = ds.map(m => ({ dich: m.dich, ten: m.ten, mau: m.trangThai, gia: Object.fromEntries(oCuaMon(m).map(c => [c.cot, { cu: c.cu, moi: c.moi }])) }));
+    return { ok: true, xacMinh: true, daGhi, boQua: [], xemTruoc: j, soDo: daGhi.filter(x => x.mau === 'do').length, soXanh: daGhi.filter(x => x.mau === 'xanh').length };
+  }
+  const e = new Error(`${loiGoc.message} Đã kiểm tra lại: ${vao.length}/${chon.length} ô giá đã được ghi.`);
+  e.xemTruoc = j;
+  e.boQua = chon.filter(c => !vao.includes(c)).map(c => ({ ten: c.ten, cot: c.cot, lyDo: 'Chưa ghi — tích lại và ghi lần nữa' }));
+  throw e;
+}
+
+/* ══════════════════ MÀN 2 — xong ══════════════════ */
+function veKetQua(r) {
+  let ds = '';
+  for (const dich of Object.keys(TEN_DICH)) {
+    const nhom = r.daGhi.filter(x => x.dich === dich);
+    if (!nhom.length) continue;
+    ds += `<li class="tieu-de">${thoat(TEN_DICH[dich])}</li>` + nhom.map(x => `<li><span class="cham ${x.mau}"></span><span>${thoat(x.ten)}</span>
+      <span class="phai">${Object.entries(x.gia).map(([cot, g]) => `${thoat(cot)}: <span class="cu">${dinh(g.cu)}</span> → <b>${dinh(g.moi)}</b>`).join('<br>')}</span></li>`).join('');
+  }
+  $('#ket-qua').innerHTML = `
+    <div class="xong"><div class="dau-tich">✓</div><h2>Đã cập nhật ${r.daGhi.length} món</h2>
+      <p>${r.soDo} đổi giá bán · ${r.soXanh} chỉ đổi giá sỉ — đã tô màu trong Sheet</p>
+      ${r.xacMinh ? '<p style="font-size:12.5px">Google báo lỗi đường truyền nhưng đã kiểm tra lại: dữ liệu đã vào Sheet.</p>' : ''}</div>
+    <ul class="ds-kq">${ds}</ul>
+    ${r.boQua?.length ? `<div style="padding:12px 16px 0"><div class="canh"><b>Bỏ qua ${r.boQua.length} ô</b><ul>${r.boQua.map(x => `<li>${thoat(x.ten)} · ${thoat(x.cot)}: ${thoat(x.lyDo)}</li>`).join('')}</ul></div></div>` : ''}
+    <div class="hang-nut"><button class="nut phu" id="nut-lai">Kiểm tra lại</button></div>`;
+}
+
+/* ══════════════════ điều hướng ══════════════════ */
+function sangMan(m) {
+  const cu = man; man = m;
+  $$('.man').forEach(s => {
+    const la = s.id === 'man' + m;
+    s.hidden = !la;
+    if (la && cu !== m) { s.classList.remove('vao-phai', 'vao-trai'); void s.offsetWidth; s.classList.add(m > cu ? 'vao-phai' : 'vao-trai'); }
+  });
+  if (m === 2) history.pushState({ man: 2 }, '');
+  scrollTo({ top: 0, behavior: giamChuyenDong() ? 'auto' : 'smooth' });
+  capNhatThanh();
+}
+function veMan1() { sangMan(1); napDuLieu(); }
+addEventListener('popstate', () => { if (man !== 1) veMan1(); });   // nút Back của điện thoại
+
+$('#nut-ghi').addEventListener('click', ghi);
+$('#nut-tai').addEventListener('click', async () => { if (man !== 1) sangMan(1); if (await napDuLieu()) bao('Đã tính lại theo giá mới nhất'); });
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-thu-lai]')) napDuLieu();
+  if (e.target.closest('[data-so-lai]')) { $('#tb-ghi').innerHTML = ''; napDuLieu(false); }
+  if (e.target.closest('#nut-lai')) { if (history.state?.man) history.back(); else veMan1(); }
+});
+
+napDuLieu();
 </script>
 </body>
 </html>
