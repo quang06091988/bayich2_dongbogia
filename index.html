@@ -13,10 +13,17 @@
 <meta property="og:title" content="Đồng Bộ Giá — Bảy Ích 2">
 <meta property="og:description" content="Retail đổi giá → cập nhật Menu và Vân Bao Bì trong một lần bấm.">
 <meta property="og:image" content="https://bayich2-dongbogia.vercel.app/og.png">
+<meta property="og:image:secure_url" content="https://bayich2-dongbogia.vercel.app/og.png">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Đồng bộ giá của Tạp Hóa Bảy Ích 2: Retail đổi giá, Menu và bảng giá cập nhật theo">
 <meta property="og:locale" content="vi_VN">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Đồng Bộ Giá — Bảy Ích 2">
+<meta name="twitter:description" content="Retail đổi giá → cập nhật Menu và Vân Bao Bì trong một lần bấm.">
+<meta name="twitter:image" content="https://bayich2-dongbogia.vercel.app/og.png">
+<link rel="canonical" href="https://bayich2-dongbogia.vercel.app/">
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f5233'/%3E%3Cpath d='M9 12h12l-3-3M23 20H11l3 3' stroke='%23e9c46a' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,11 +47,11 @@ button{font:inherit;color:inherit}
 
 /* ── đầu trang ── */
 .dau-trang{background:var(--xanh);color:var(--kem);padding:calc(14px + env(safe-area-inset-top)) 0 14px}
-.dau-trang .wrap{display:flex;align-items:center;gap:12px}
-.dau-trang .wrap > div:first-child{min-width:0}
-.dau-trang h1{font-size:20px;line-height:1.2;white-space:nowrap}
-.dau-trang p{margin:1px 0 0;font-size:12.5px;color:#c9d8c9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trang-thai{margin-left:auto;display:flex;align-items:center;gap:8px}
+/* Điện thoại: tiêu đề phụ nằm riêng hàng 2, trải hết chiều ngang — không bị cắt chữ. Máy tính: nằm dưới tiêu đề. */
+.dau-trang .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"td tt" "pd pd";align-items:center;column-gap:12px}
+.dau-trang h1{grid-area:td;font-size:20px;line-height:1.2;white-space:nowrap}
+.dau-trang p{grid-area:pd;margin:3px 0 0;font-size:12.5px;line-height:1.35;color:#c9d8c9}
+.trang-thai{grid-area:tt;display:flex;align-items:center;gap:8px}
 .trang-thai span{font-size:12px;background:rgba(255,255,255,.12);padding:5px 11px;border-radius:99px;white-space:nowrap}
 .nut-tron{width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.14);color:var(--kem);font-size:18px;cursor:pointer;flex:none}
 .nut-tron.quay{animation:quay .8s linear infinite}
@@ -157,7 +164,9 @@ details.gap[open] summary::before{transform:rotate(90deg)}
 /* ══ MÁY TÍNH ══ */
 @media (min-width:760px){
   .wrap{padding:0 20px}
-  .dau-trang h1{font-size:23px}
+  .dau-trang .wrap{grid-template-areas:"td tt" "pd tt"}
+  .dau-trang h1{font-size:23px;align-self:end}
+  .dau-trang p{align-self:start;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   main{padding-top:20px}
   .mon-dau,.mon{grid-template-columns:36px minmax(0,1fr) repeat(var(--k),150px) 150px}
   .mon-dau{display:grid;gap:12px;padding:0 16px 6px;font-size:12px;color:var(--mo);font-weight:600}
@@ -178,10 +187,8 @@ details.gap[open] summary::before{transform:rotate(90deg)}
 
 <header class="dau-trang">
   <div class="wrap">
-    <div>
-      <h1>Đồng bộ giá</h1>
-      <p>Retail → Menu Bảy Ích 2 · SanPham Vân Bao Bì</p>
-    </div>
+    <h1>Đồng bộ giá</h1>
+    <p>Retail → Menu Bảy Ích 2 · SanPham Vân Bao Bì</p>
     <div class="trang-thai">
       <span id="tt">Đang tải…</span>
       <button class="nut-tron" id="nut-tai" aria-label="Tính lại từ giá mới nhất" title="Tính lại từ giá mới nhất">↻</button>
@@ -285,7 +292,7 @@ async function goi(payload) {
 /* ══════════════════ dữ liệu ══════════════════ */
 let DL = null;          // {mon, canhBao, nguongNhay, thoiGian}
 let CHON = new Set();   // khoá "dich|ten" các món đang tích
-let man = 1, dangGhi = false, lanTai = 0;
+let man = 1, dangGhi = false, lanTai = 0, lucTai = 0;   // lucTai: lúc tính được gần nhất
 
 const coDoi = m => m.trangThai === 'do' || m.trangThai === 'xanh';
 const canXem = m => coDoi(m) && DL.nguongNhay && m.nhay * 100 >= DL.nguongNhay;
@@ -301,10 +308,11 @@ async function napDuLieu(chonLai = true) {
     const j = await layDuLieu(n => { if (lan === lanTai) $('#tt').textContent = `Google chậm — thử lại ${n}/${THU.lan}…`; });
     if (!j.ok) throw new Error(j.loi || 'Apps Script báo lỗi.');
     if (lan !== lanTai) return false;
-    soLanTuThu = 0;
-    const cu = CHON;
+    soLanTuThu = 0; lucTai = Date.now();
+    /* chonLai=false: món đã thấy từ trước giữ đúng như đang tích; món mới xuất hiện thì tích theo mặc định */
+    const cu = CHON, daThay = new Set((DL?.mon || []).filter(coDoi).map(khoaMon));
     DL = j;
-    CHON = new Set(j.mon.filter(m => coDoi(m) && (chonLai ? !canXem(m) : cu.has(khoaMon(m)))).map(khoaMon));
+    CHON = new Set(j.mon.filter(m => coDoi(m) && ((chonLai || !daThay.has(khoaMon(m))) ? !canXem(m) : cu.has(khoaMon(m)))).map(khoaMon));
     $('#tb-loi').innerHTML = '';
     $('#tt').textContent = 'Tính lúc ' + new Date(j.thoiGian).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     ve();
@@ -334,6 +342,15 @@ function henTuThuLai(lyDo) {
     else ve();
   }, 1000);
 }
+
+/* Để trang mở rồi quay lại (vd sau khi ghi toa ở trang Đối chiếu): số đã cũ → tự tính lại, giữ các món đang tích. */
+const CU_MS = 60e3;
+function tinhLaiNeuCu() {
+  if (document.hidden || man !== 1 || dangGhi || !DL || Date.now() - lucTai < CU_MS) return;
+  napDuLieu(false).then(ok => { if (ok) bao('Đã tính lại theo giá mới nhất'); });
+}
+document.addEventListener('visibilitychange', tinhLaiNeuCu);
+addEventListener('pageshow', e => { if (e.persisted) tinhLaiNeuCu(); });
 
 /* ══════════════════ MÀN 1 — kiểm tra ══════════════════ */
 function chuNguon(m) {
