@@ -268,13 +268,21 @@ async function docJSON(r) {
 }
 /* Đợt trục trặc của Google có thể kéo dài vài giây: thử THU.lan lần, nghỉ tăng dần (1s, 2s, 3s, 4s).
    JSON sai dạng (phản hồi lạc, vd kiểu ping) cũng tính là thất bại. Hết lượt thì tự thử lại sau tuThuLaiMs. */
-const THU = { lan: 5, nghiMs: 1000, tuThuLaiMs: 15000, toiDaTuThu: 20 };
+const THU = { lan: 5, nghiMs: 1000, choMs: 25000, tuThuLaiMs: 15000, toiDaTuThu: 20 };
+/* Một lần đọc quá THU.choMs thì bỏ, tính là thất bại để thử lại — lúc Google kẹt, gọi lại thường nhanh hơn chờ tiếp.
+   Chỉ dùng cho ĐỌC: lệnh ghi bỏ ngang thì script vẫn có thể đang ghi, nên ghi luôn chờ tới khi có trả lời. */
+async function docCoHan(url) {
+  const ctl = new AbortController(), hg = setTimeout(() => ctl.abort(), THU.choMs);
+  try { return await docJSON(await fetch(url, { signal: ctl.signal })); }
+  catch (e) { throw ctl.signal.aborted ? new LoiDuongTruyen(`Google không trả lời sau ${THU.choMs / 1000} giây.`) : e; }
+  finally { clearTimeout(hg); }
+}
 async function layDuLieu(baoTienDo) {
   let loi;
   for (let lan = 1; lan <= THU.lan; lan++) {
     if (lan > 1) { baoTienDo && baoTienDo(lan); await ngu((lan - 1) * THU.nghiMs); }
     try {
-      const j = await docJSON(await fetch(API + '?viec=xemTruoc&t=' + Date.now()));
+      const j = await docCoHan(API + '?viec=xemTruoc&t=' + Date.now());
       if (j && j.ok === false) return j;                          // lỗi thật từ máy chủ — không thử lại
       if (j && Array.isArray(j.mon)) return j;
       loi = new LoiDuongTruyen('Google trả về dữ liệu không đúng dạng.');
