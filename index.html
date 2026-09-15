@@ -234,7 +234,7 @@ details.gap[open] summary::before{transform:rotate(90deg)}
 <div class="che-pin" id="hop-pin" hidden>
   <div class="hop-pin" role="dialog" aria-modal="true" aria-labelledby="td-pin">
     <h2 id="td-pin">Nhập Mã PIN chung</h2>
-    <p>Cần một lần trên máy này trước khi ghi vào Sheet. Xem ô "Mã PIN chung" ở tab CauHinh trong Google Sheet bayich2.</p>
+    <p>Cần một lần trên máy này để xem và ghi giá. Xem ô "Mã PIN chung" ở tab CauHinh trong Google Sheet bayich2.</p>
     <input id="o-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="Mã PIN chung">
     <p class="loi-pin" id="loi-pin" role="alert"></p>
     <div class="hang-nut-pin"><button class="nut phu" id="huy-pin">Huỷ</button><button class="nut" id="nut-pin">Xác nhận</button></div>
@@ -292,9 +292,10 @@ async function docJSON(r) {
 const THU = { lan: 5, nghiMs: 1000, choMs: 25000, tuThuLaiMs: 15000, toiDaTuThu: 20 };
 /* Một lần đọc quá THU.choMs thì bỏ, tính là thất bại để thử lại — lúc Google kẹt, gọi lại thường nhanh hơn chờ tiếp.
    Chỉ dùng cho ĐỌC: lệnh ghi bỏ ngang thì script vẫn có thể đang ghi, nên ghi luôn chờ tới khi có trả lời. */
-async function docCoHan(url) {
+/* Xem trước = POST có Mã PIN trong nội dung gửi (không đưa PIN lên link). Lệnh đọc không đổi dữ liệu nên thử lại thoải mái. */
+async function docCoHan(api, body) {
   const ctl = new AbortController(), hg = setTimeout(() => ctl.abort(), THU.choMs);
-  try { return await docJSON(await fetch(url, { signal: ctl.signal })); }
+  try { return await docJSON(await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), signal: ctl.signal })); }
   catch (e) { throw ctl.signal.aborted ? new LoiDuongTruyen(`Google không trả lời sau ${THU.choMs / 1000} giây.`) : e; }
   finally { clearTimeout(hg); }
 }
@@ -303,7 +304,7 @@ async function layDuLieu(baoTienDo) {
   for (let lan = 1; lan <= THU.lan; lan++) {
     if (lan > 1) { baoTienDo && baoTienDo(lan); await ngu((lan - 1) * THU.nghiMs); }
     try {
-      const j = await docCoHan(API + '?viec=xemTruoc&t=' + Date.now());
+      const j = await docCoHan(API, { hanhDong: 'xemTruoc', pin: docPin() });
       if (j && j.ok === false) return j;                          // lỗi thật từ máy chủ — không thử lại
       if (j && Array.isArray(j.mon)) return j;
       loi = new LoiDuongTruyen('Google trả về dữ liệu không đúng dạng.');
@@ -318,7 +319,7 @@ async function goi(payload) {
   return docJSON(r);
 }
 
-/* ── Mã PIN chung (tab CauHinh) — chỉ cần khi GHI. Nhập một lần, lưu trong máy này. ── */
+/* ── Mã PIN chung (tab CauHinh) — cần để XEM và GHI giá. Nhập một lần, lưu trong máy này. ── */
 const KHOA_PIN = 'b2_pin';
 const docPin = () => { try { return localStorage.getItem(KHOA_PIN) || ''; } catch { return ''; } };
 const luuPin = p => { try { p ? localStorage.setItem(KHOA_PIN, p) : localStorage.removeItem(KHOA_PIN); } catch {} };
@@ -358,12 +359,19 @@ const oCuaMon = m => Object.entries(m.gia).filter(([, g]) => g.doi).map(([cot, g
 const monDaChon = () => (DL?.mon || []).filter(m => coDoi(m) && CHON.has(khoaMon(m)));
 
 let hgTuThu = null, soLanTuThu = 0;
+/* Xem giá cần Mã PIN chung: chưa có thì hỏi trước; huỷ thì không tải gì */
+function canPin() {
+  $('#tt').textContent = 'Chưa có PIN';
+  $('#tb-loi').innerHTML = '<div class="canh"><b>Cần Mã PIN chung để xem giá</b>Xem ô "Mã PIN chung" ở tab CauHinh trong Google Sheet bayich2.<br><button class="nut" data-thu-lai>Nhập PIN</button></div>';
+}
 async function napDuLieu(chonLai = true) {
+  if (!docPin() && !(await hoiPin())) { canPin(); return false; }
   const lan = ++lanTai, nut = $('#nut-tai');
   nut.classList.add('quay');
   clearInterval(hgTuThu);
   try {
     const j = await layDuLieu(n => { if (lan === lanTai) $('#tt').textContent = `Google chậm — thử lại ${n}/${THU.lan}…`; });
+    if (!j.ok && j.maLoi === 'PIN') { luuPin(''); if (lan === lanTai) setTimeout(() => napDuLieu(chonLai), 0); return false; }   // PIN đã đổi → hỏi lại
     if (!j.ok) throw new Error(j.loi || 'Apps Script báo lỗi.');
     if (lan !== lanTai) return false;
     soLanTuThu = 0; lucTai = Date.now();

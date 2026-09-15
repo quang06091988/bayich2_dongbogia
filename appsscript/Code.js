@@ -8,7 +8,7 @@
  *                                    Giá Sỉ  = Giá Nhập Lẻ
  * theo khối ánh xạ trong tab DongBo (sheet bayich2).
  *
- *  ĐỌC : doGet?viec=xemTruoc → danh sách món và giá dự kiến, KHÔNG ghi gì.
+ *  ĐỌC : doPost {hanhDong:'xemTruoc', pin} → danh sách món và giá dự kiến, KHÔNG ghi gì — cần Mã PIN chung.
  *  GHI : doPost {hanhDong:'dongBo', pin, chon:[{dich, ten, cot, cu, moi}]} — cần Mã PIN chung (tab CauHinh)
  *        rồi tô dòng vừa ghi:  ĐỎ = có đổi giá bán · XANH = chỉ đổi Giá Sỉ
  *
@@ -64,7 +64,8 @@ var TOI_DA_O_GHI = 300;
 function doGet(e) {
   try {
     var viec = (e && e.parameter && e.parameter.viec) || 'ping';
-    if (viec === 'xemTruoc') return traLoi(tinhThayDoi());
+    /* Xem trước đã chuyển sang doPost {hanhDong:'xemTruoc', pin} — GET không trả giá nữa (trang bản cũ thì báo tải lại) */
+    if (viec === 'xemTruoc') return traLoi({ ok: false, maLoi: 'CU', loi: 'Trang đang là bản cũ — tải lại trang (xem giá giờ cần Mã PIN chung)' });
     return traLoi({ ok: true, ten: 'bayich2_dongbogia', thoiGian: new Date().toISOString() });
   } catch (err) {
     return traLoi({ ok: false, loi: String(err) });
@@ -79,13 +80,14 @@ function tinhThayDoi() {
 
 /* ══════════════════ GHI ══════════════════ */
 /* Mọi lệnh GHI cần Mã PIN chung (tab CauHinh). Kiểm PIN TRƯỚC khi giữ khoá ghi — sai PIN (chờ 2 giây) không chặn người khác.
-   {hanhDong:'kiemPin', pin} để trang kiểm PIN ngay lúc nhập. Xem trước (doGet) không cần PIN. */
+   {hanhDong:'kiemPin', pin} để trang kiểm PIN ngay lúc nhập. {hanhDong:'xemTruoc', pin} = ĐỌC — cũng cần PIN, không giữ khoá ghi. */
 function doPost(e) {
   try {
     var d = JSON.parse(e.postData.contents);
     var p = kiemPin(SpreadsheetApp.openById(ID_BAYICH2), d.pin);
     if (!p.ok) return traLoi(p);
     if (d.hanhDong === 'kiemPin') return traLoi({ ok: true });
+    if (d.hanhDong === 'xemTruoc') return traLoi(tinhThayDoi());
     if (d.hanhDong !== 'dongBo') return traLoi({ ok: false, loi: 'Hành động không hợp lệ' });
     if (!Array.isArray(d.chon) || !d.chon.length) return traLoi({ ok: false, loi: 'Chưa chọn món nào để ghi' });
     if (d.chon.length > TOI_DA_O_GHI) return traLoi({ ok: false, loi: 'Quá nhiều ô trong một lần ghi' });
