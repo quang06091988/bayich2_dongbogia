@@ -40,7 +40,8 @@ appsscript/       backend — Apps Script STANDALONE "bayich2_dongbogia" (không
 
 Backend là web app quyền "Bất kỳ ai", nhưng **máy chủ tự tính giá từ Retail** — trang web chỉ gửi
 "ghi những món nào" kèm giá cũ/mới đã thấy lúc xem trước. Một ô chỉ được ghi khi giá đang có và giá
-tính lại đều khớp. Người lạ có link cũng không chèn được giá tuỳ ý.
+tính lại đều khớp. Người lạ có link cũng không chèn được giá tuỳ ý. Lệnh ghi còn cần **Mã PIN chung** (tab CauHinh),
+nhập một lần trên mỗi máy; xem trước không cần PIN.
 
 ## Sửa backend
 

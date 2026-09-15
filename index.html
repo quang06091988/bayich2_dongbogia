@@ -73,6 +73,16 @@ main{padding-top:14px}
 .chip.xanh{background:var(--luc);color:#fff}
 
 .canh{border-radius:12px;padding:11px 14px;font-size:13.5px;margin-bottom:12px;background:var(--vang-nen);border:1px solid var(--vang-vien)}
+/* khung Mã PIN chung — hỏi một lần trên máy này, trước lần ghi đầu tiên */
+.che-pin{position:fixed;inset:0;z-index:70;background:rgba(24,34,25,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.che-pin[hidden]{display:none}
+.hop-pin{width:100%;max-width:380px;background:#fffdf7;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.hop-pin h2{font-size:18px;margin:0 0 4px}
+.hop-pin p{margin:0 0 12px;font-size:13.5px;color:#6d7a6e}
+.hop-pin input{width:100%;min-height:48px;border:1.5px solid #ded5bf;border-radius:10px;padding:8px 12px;font-size:22px;letter-spacing:.3em;text-align:center;background:#fff}
+.hop-pin input:focus{outline:none;border-color:#2f5233;box-shadow:0 0 0 3px rgba(47,82,51,.12)}
+.hop-pin .loi-pin{color:#b3261e;font-weight:600;min-height:1.3em;margin:8px 0}
+.hang-nut-pin{display:flex;gap:10px;justify-content:flex-end}
 .canh.loi{background:var(--do-nen);border-color:#ecbdb8}
 .canh.ok{background:var(--luc-nen);border-color:#b3d8bf}
 .canh b{display:block;margin-bottom:2px}
@@ -220,6 +230,17 @@ details.gap[open] summary::before{transform:rotate(90deg)}
   </div>
 </div>
 
+<!-- Mã PIN chung — hỏi một lần trên máy này, trước lần ghi đầu tiên -->
+<div class="che-pin" id="hop-pin" hidden>
+  <div class="hop-pin" role="dialog" aria-modal="true" aria-labelledby="td-pin">
+    <h2 id="td-pin">Nhập Mã PIN chung</h2>
+    <p>Cần một lần trên máy này trước khi ghi vào Sheet. Xem ô "Mã PIN chung" ở tab CauHinh trong Google Sheet bayich2.</p>
+    <input id="o-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="Mã PIN chung">
+    <p class="loi-pin" id="loi-pin" role="alert"></p>
+    <div class="hang-nut-pin"><button class="nut phu" id="huy-pin">Huỷ</button><button class="nut" id="nut-pin">Xác nhận</button></div>
+  </div>
+</div>
+
 <div class="bao" id="bao" role="status" aria-live="polite"></div>
 
 <script>
@@ -295,6 +316,35 @@ async function goi(payload) {
   try { r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); }
   catch { throw new LoiDuongTruyen('Mất kết nối tới Apps Script.'); }
   return docJSON(r);
+}
+
+/* ── Mã PIN chung (tab CauHinh) — chỉ cần khi GHI. Nhập một lần, lưu trong máy này. ── */
+const KHOA_PIN = 'b2_pin';
+const docPin = () => { try { return localStorage.getItem(KHOA_PIN) || ''; } catch { return ''; } };
+const luuPin = p => { try { p ? localStorage.setItem(KHOA_PIN, p) : localStorage.removeItem(KHOA_PIN); } catch {} };
+/* Có PIN rồi thì trả ngay; chưa có thì mở khung nhập, kiểm với máy chủ (lệnh kiemPin) — đúng mới lưu. Huỷ → null. */
+function hoiPin() {
+  const co = docPin();
+  if (co) return Promise.resolve(co);
+  const hop = $('#hop-pin'), o = $('#o-pin'), bao = $('#loi-pin'), nut = $('#nut-pin');
+  if (!hop.hidden) return Promise.resolve(null);
+  return new Promise(res => {
+    o.value = ''; bao.textContent = ''; hop.hidden = false; setTimeout(() => o.focus(), 60);
+    const xong = v => { hop.hidden = true; nut.onclick = $('#huy-pin').onclick = o.onkeydown = null; res(v); };
+    const thu = async () => {
+      const pin = o.value.trim();
+      if (!pin) { bao.textContent = 'Nhập Mã PIN chung.'; return; }
+      nut.disabled = true; nut.textContent = 'Đang kiểm tra…'; bao.textContent = '';
+      try {
+        const r = await goi({ hanhDong: 'kiemPin', pin });
+        if (r && r.ok) { luuPin(pin); xong(pin); }
+        else bao.textContent = (r && r.loi) || 'Sai mã PIN.';
+      } catch (e) { bao.textContent = 'Chưa kiểm tra được (' + e.message + ') — thử lại.'; }
+      finally { nut.disabled = false; nut.textContent = 'Xác nhận'; }
+    };
+    nut.onclick = thu; $('#huy-pin').onclick = () => xong(null);
+    o.onkeydown = e => { if (e.key === 'Enter') thu(); if (e.key === 'Escape') xong(null); };
+  });
 }
 
 /* ══════════════════ dữ liệu ══════════════════ */
@@ -433,18 +483,19 @@ function capNhatThanh() {
 async function ghi() {
   const ds = monDaChon();
   if (!ds.length || dangGhi) return;
+  const pin = await hoiPin(); if (!pin) return;   // lệnh ghi cần Mã PIN chung — nhập một lần trên máy này
   const chon = ds.flatMap(oCuaMon);
   dangGhi = true; capNhatThanh();
   $('#tb-ghi').innerHTML = '';
   let r;
   try {
     try {
-      r = await goi({ hanhDong: 'dongBo', chon });
+      r = await goi({ hanhDong: 'dongBo', chon, pin });
       /* ok mà không có danh sách đã ghi = phản hồi lạc, không phải của lệnh ghi này → xác minh như lỗi đường truyền */
       if (!r || typeof r !== 'object' || (r.ok && !Array.isArray(r.daGhi))) throw new LoiDuongTruyen('Google trả về phản hồi không đúng dạng.');
     } catch (e) { if (!(e instanceof LoiDuongTruyen)) throw e; r = await xacMinhSauLoi(ds, chon, e); }
     if (r.xemTruoc?.ok) DL = r.xemTruoc;
-    if (!r.ok) { const e = new Error(r.loi || 'Apps Script báo lỗi.'); e.boQua = r.boQua; throw e; }
+    if (!r.ok) { if (r.maLoi === 'PIN') luuPin(''); const e = new Error(r.loi || 'Apps Script báo lỗi.'); e.boQua = r.boQua; throw e; }   // PIN đã đổi → lần bấm sau hỏi lại
   } catch (e) {
     if (e.xemTruoc) DL = e.xemTruoc;
     if (DL) { CHON = new Set([...CHON].filter(k => DL.mon.some(m => khoaMon(m) === k && coDoi(m)))); ve(); }
