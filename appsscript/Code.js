@@ -15,8 +15,8 @@
  * An toàn dù web app mở cho "Bất kỳ ai": máy chủ TỰ TÍNH giá từ Retail, client không bao giờ gửi giá
  * để ghi. `cu`/`moi` chỉ để đối chiếu: một ô chỉ được ghi khi giá đang có == cu VÀ giá tính lại == moi.
  *
- * Tab DongBo: bảng ánh xạ Đích | Tên ở đích | Nguồn (Retail) | Hệ số (tìm theo CHỮ TIÊU ĐỀ)
- *     → món ghép: nguồn "A + B" (giá = tổng) · món nửa ký: hệ số 0,5
+ * Tab DongBo: bảng ánh xạ Đích | Tên ở đích | Nguồn (Retail) (tìm theo CHỮ TIÊU ĐỀ)
+ *     → món ghép: "A + B" (giá = tổng) · món nửa ký: "Bị Ngang Lớn ÷ 2" (phép tính ở cuối, áp cho cả tổng)
  * Tab CauHinh: cấu hình dùng chung cho mọi công cụ — Trường | Giá trị | Ghi chú | Dùng cho
  *     (sheet Vân Bao Bì, bước làm tròn, ngưỡng cảnh báo, màu…) — tab riêng tư, KHÔNG xuất bản lên web.
  *
@@ -31,7 +31,8 @@ var TAB_RETAIL = 'Retail';
 var TAB_DONGBO = 'DongBo';
 var COT_RETAIL = { ten: 'Mặt Hàng', giaNhapLe: 'Giá Nhập Lẻ', giaLamTron: 'Giá Làm Tròn' };
 
-var TD_DICH = 'Đích', TD_TEN = 'Tên ở đích', TD_NGUON = 'Nguồn (Retail)', TD_HESO = 'Hệ số';
+var TD_DICH = 'Đích', TD_TEN = 'Tên ở đích', TD_NGUON = 'Nguồn (Retail)';
+var TD_HESO = 'Hệ số';   // cột của bản cũ — chỉ còn để đọc tạm và để caiDat gộp vào cột Nguồn
 var TAB_CAU_HINH = 'CauHinh';
 var TD_TRUONG = 'Trường', TD_GIA_TRI = 'Giá trị', TD_GHI_CHU = 'Ghi chú', TD_DUNG_CHO = 'Dùng cho';
 
@@ -186,12 +187,11 @@ function tinhToan() {
     if (!dongs) { canhBao.push(loi('Không thấy "' + m.ten + '" trong tab ' + cfg.tab + ' (DongBo dòng ' + m.dong + ')')); return; }
     if (dongs.length > 1) { canhBao.push(loi('"' + m.ten + '" có ' + dongs.length + ' dòng trùng tên trong tab ' + cfg.tab + ' — không biết ghi dòng nào')); return; }
 
-    var nguon = [], thieu = [];
-    m.nguon.forEach(function (n) {
-      var r = retail.theoTen[chuanHoa(n)];
-      if (r) { nguon.push(r); daDung[chuanHoa(n)] = true; } else thieu.push(n);
-    });
-    if (thieu.length) { canhBao.push(loi('DongBo dòng ' + m.dong + ': không thấy "' + thieu.join('", "') + '" trong Retail')); return; }
+    var tach = tachNguon(m.nguonTho, retail.theoTen);
+    if (tach.loi) { canhBao.push(loi('DongBo dòng ' + m.dong + ': ' + tach.loi)); return; }
+    if (tach.heSo !== 1 && m.heSoCot !== 1) { canhBao.push(loi('DongBo dòng ' + m.dong + ': hệ số ghi 2 chỗ (cột Hệ số và cột Nguồn) — chỉ giữ một chỗ')); return; }
+    var heSo = tach.heSo !== 1 ? tach.heSo : m.heSoCot, nguon = tach.nguon;
+    nguon.forEach(function (r) { daDung[chuanHoa(r.ten)] = true; });
 
     var tongTron = 0, tongNhapLe = 0, thieuGia = [];
     nguon.forEach(function (r) {
@@ -204,7 +204,7 @@ function tinhToan() {
     var i = dongs[0], gia = {}, doiBan = false, doiSi = false, nhay = 0;
     cfg.cot.forEach(function (c) {
       var cotSo = b.cot[c.ten];
-      var moi = c.tinh === 'lamTron' ? lamTron(m.heSo * tongTron, ch.buocLamTron) : Math.round(m.heSo * tongNhapLe);
+      var moi = c.tinh === 'lamTron' ? lamTron(heSo * tongTron, ch.buocLamTron) : Math.round(heSo * tongNhapLe);
       var cu = soHoa(b.hang[i][cotSo]), doi = cu !== moi;
       if (doi) {
         if (c.giaBan) doiBan = true; else doiSi = true;
@@ -214,7 +214,7 @@ function tinhToan() {
     });
     mon.push({
       dich: m.dich, ten: String(b.hang[i][b.cotTen]).trim(),
-      nguon: nguon.map(function (r) { return r.ten; }), heSo: m.heSo,
+      nguon: nguon.map(function (r) { return r.ten; }), heSo: heSo,
       gia: gia, trangThai: doiBan ? 'do' : (doiSi ? 'xanh' : 'giu'), nhay: nhay,
       _sh: b.sh, _dong: i + 1, _soCot: b.soCot, _soDong: b.hang.length
     });
@@ -271,7 +271,7 @@ function docDongBo(ss, canhBao) {
   });
   if (conCu) canhBao.push(luuY('Cấu hình còn nằm ở tab ' + TAB_DONGBO + ' — mở Apps Script, chạy hàm caiDat một lần để chuyển sang tab ' + TAB_CAU_HINH));
 
-  var anhXa = [];
+  var anhXa = [], conCotHeSo = false;
   if (c.dich < 0 || c.ten < 0 || c.nguon < 0) canhBao.push(loi('Tab DongBo thiếu tiêu đề khối ánh xạ (' + [TD_DICH, TD_TEN, TD_NGUON].join(' | ') + ')'));
   else {
     for (var j = 1; j < hang.length; j++) {
@@ -284,15 +284,43 @@ function docDongBo(ss, canhBao) {
       Object.keys(DICH).forEach(function (k) { if (chuanHoa(k) === chuanHoa(dichTho)) dich = k; });
       if (!dich) { canhBao.push(loi('DongBo dòng ' + dong + ': Đích "' + dichTho + '" không hợp lệ (chỉ nhận Menu hoặc SanPham)')); continue; }
       if (!ten || !nguonTho) { canhBao.push(loi('DongBo dòng ' + dong + ': thiếu Tên ở đích hoặc Nguồn')); continue; }
-      var heSo = heSoTho === '' || heSoTho == null ? 1 : soThuc(heSoTho);
-      if (heSo == null || heSo <= 0) { canhBao.push(loi('DongBo dòng ' + dong + ': Hệ số "' + heSoTho + '" không hợp lệ')); continue; }
-      anhXa.push({
-        dong: dong, dich: dich, ten: ten, heSo: heSo,
-        nguon: nguonTho.split('+').map(function (s) { return s.trim(); }).filter(Boolean)
-      });
+      var heSoCot = heSoTho === '' || heSoTho == null ? 1 : soThuc(heSoTho);
+      if (heSoCot == null || heSoCot <= 0) { canhBao.push(loi('DongBo dòng ' + dong + ': Hệ số "' + heSoTho + '" không hợp lệ')); continue; }
+      if (heSoCot !== 1) conCotHeSo = true;
+      anhXa.push({ dong: dong, dich: dich, ten: ten, nguonTho: nguonTho, heSoCot: heSoCot });   // tách nguồn khi đã có Retail
     }
   }
+  if (conCotHeSo) canhBao.push(luuY('Cột Hệ số sẽ gộp vào cột Nguồn (vd "Bị Ngang Lớn ÷ 2") — mở Apps Script, chạy hàm caiDat một lần'));
   return { anhXa: anhXa, cauHinh: cauHinh };
+}
+
+/* Cột Nguồn: "A + B" = tổng giá các món Retail. Cuối có thể kèm phép tính áp cho CẢ TỔNG:
+   "÷ 2", "/ 2", ": 2", "× 0,5", "x 0,5", "* 0.5" — hoặc "½" ở đầu. Tên Retail được khớp trước, nên tên có dấu phẩy,
+   chữ số hay chữ "x" không bao giờ bị hiểu nhầm là phép tính. Trả { nguon: [món Retail], heSo } hoặc { loi }. */
+function tachNguon(tho, theoTen) {
+  function khop(s) {
+    var ten = String(s).split('+').map(function (x) { return x.trim(); }).filter(Boolean), ds = [], thieu = [];
+    ten.forEach(function (n) { var r = theoTen[chuanHoa(n)]; if (r) ds.push(r); else thieu.push(n); });
+    return { ds: ds, thieu: ten.length ? thieu : [String(s).trim()] };
+  }
+  var s = String(tho || '').trim(), heSo = 1, m;
+  if ((m = s.match(/^½\s*(.+)$/))) { s = m[1]; heSo = 0.5; }   // xét trước: chuanHoa bỏ mất ký tự "½"
+  else {
+    var goc = khop(s);
+    if (!goc.thieu.length) return { nguon: goc.ds, heSo: 1 };
+    if ((m = s.match(/^(.+?)\s*[÷\/:]\s*(\d+(?:[.,]\d+)?)$/))) { s = m[1]; var chia = soPhepTinh(m[2]); heSo = chia > 0 ? 1 / chia : 0; }
+    else if ((m = s.match(/^(.+?)\s*[×xX*]\s*(\d+(?:[.,]\d+)?)$/))) { s = m[1]; heSo = soPhepTinh(m[2]); }
+    else return { loi: 'không thấy "' + goc.thieu.join('", "') + '" trong Retail' };
+    if (!(heSo > 0)) return { loi: 'phép tính trong "' + tho + '" không hợp lệ — hệ số phải lớn hơn 0' };
+  }
+  var k = khop(s);
+  if (k.thieu.length) return { loi: 'không thấy "' + k.thieu.join('", "') + '" trong Retail' };
+  return { nguon: k.ds, heSo: heSo };
+}
+function soPhepTinh(s) { return parseFloat(String(s).replace(',', '.')); }   // "0,5" / "0.5" → 0,5 (không có dấu nghìn)
+function chuPhepTinh(heSo) {
+  var n = 1 / heSo;
+  return Math.abs(n - Math.round(n)) < 1e-9 ? '÷ ' + Math.round(n) : '× ' + String(heSo).replace('.', ',');
 }
 
 function docDich(ss, cfg, canhBao) {
@@ -348,45 +376,45 @@ var CAU_HINH_BAN_DAU = [
   ['Xoá màu cũ khi ghi', 'Có', 'Có / Không — để màu chỉ phản ánh lần ghi gần nhất', DUNG_CHUNG]
 ];
 var ANH_XA_MAC_DINH = [
-  ['Menu', 'Ly 360ml', 'Ly Trơn 360ml', ''],
-  ['Menu', 'Ly 500ml', 'Ly Trơn 500ml', ''],
-  ['Menu', 'Ly 650ml', 'Ly Trơn 650ml', ''],
-  ['Menu', 'Ly 720ml', 'Ly Trơn 720ml', ''],
-  ['Menu', 'Nắp Hữu Phong 95mm', 'Nắp Hữu Phong 95mm', ''],
-  ['Menu', 'Nắp Cầu Tròn 95mm', 'Nắp Cầu Tròn 95mm', ''],
-  ['Menu', 'Nắp Bằng Cao 95mm', 'Nắp Bằng Cao 95mm', ''],
-  ['Menu', 'Nắp Hữu Phong 116mm', 'Nắp Hữu Phong 116mm', ''],
-  ['Menu', 'Ly Cà Phê (Nắp Thường)', 'Ly Trơn 360ml + Nắp Hữu Phong 95mm', ''],
-  ['Menu', 'Ly Cà Phê (Nắp Cầu)', 'Ly Trơn 360ml + Nắp Cầu Tròn 95mm', ''],
-  ['Menu', 'Ly Sinh Tố (Kèm Nắp)', 'Ly Trơn 650ml + Nắp Cầu Tròn 95mm', ''],
-  ['Menu', 'Ly Trà Tắc (Kèm Nắp)', 'Ly Trơn 720ml + Nắp Hữu Phong 116mm', ''],
-  ['Menu', 'Ống Cà Phê', 'Ống Hút Trong 6mm, 8mm', ''],
-  ['Menu', 'Ống Sinh Tố', 'Ống Hút Trong 6mm, 8mm', ''],
-  ['Menu', 'Muỗng Ngắn', 'Muỗng GT 150mm', ''],
-  ['Menu', 'Muỗng Dài', 'Muỗng GT 200mm', ''],
-  ['Menu', 'Bị 1 Ly', 'Bị 1 Ly, 2 Ly Lớn', ''],
-  ['Menu', 'Bị 2 Ly', 'Bị 1 Ly, 2 Ly Lớn', ''],
-  ['Menu', 'Bị Ngang', 'Bị Ngang Lớn', ''],
-  ['Menu', 'Bị 1 Ly (Nửa Ký)', 'Bị 1 Ly, 2 Ly Lớn', 0.5],
-  ['Menu', 'Bị 2 Ly (Nửa Ký)', 'Bị 1 Ly, 2 Ly Lớn', 0.5],
-  ['Menu', 'Bị Ngang (Nửa Ký)', 'Bị Ngang Lớn', 0.5],
-  ['SanPham', 'Ly Trơn 360ml', 'Ly Trơn 360ml', ''],
-  ['SanPham', 'Ly Trơn 500ml', 'Ly Trơn 500ml', ''],
-  ['SanPham', 'Ly Trơn 650ml', 'Ly Trơn 650ml', ''],
-  ['SanPham', 'Ly Trơn 720ml', 'Ly Trơn 720ml', ''],
-  ['SanPham', 'Nắp Hữu Phong 95mm', 'Nắp Hữu Phong 95mm', ''],
-  ['SanPham', 'Nắp Cầu Tròn 95mm', 'Nắp Cầu Tròn 95mm', ''],
-  ['SanPham', 'Nắp Bằng Cao 95mm', 'Nắp Bằng Cao 95mm', ''],
-  ['SanPham', 'Nắp Hữu Phong 116mm', 'Nắp Hữu Phong 116mm', ''],
-  ['SanPham', 'Ống Hút Trong 6mm', 'Ống Hút Trong 6mm, 8mm', ''],
-  ['SanPham', 'Ống Hút Trong 8mm', 'Ống Hút Trong 6mm, 8mm', ''],
-  ['SanPham', 'Muỗng GT 150mm', 'Muỗng GT 150mm', ''],
-  ['SanPham', 'Muỗng GT 200mm', 'Muỗng GT 200mm', ''],
-  ['SanPham', 'Bị 1 Ly Lớn', 'Bị 1 Ly, 2 Ly Lớn', ''],
-  ['SanPham', 'Bị 2 Ly Lớn', 'Bị 1 Ly, 2 Ly Lớn', ''],
-  ['SanPham', 'Bị Ngang Lớn', 'Bị Ngang Lớn', ''],
-  ['SanPham', 'Bị 40 Dương', 'Bị 40 Dương', ''],
-  ['SanPham', 'Bị 50 Dương', 'Bị 50 Dương', '']
+  ['Menu', 'Ly 360ml', 'Ly Trơn 360ml'],
+  ['Menu', 'Ly 500ml', 'Ly Trơn 500ml'],
+  ['Menu', 'Ly 650ml', 'Ly Trơn 650ml'],
+  ['Menu', 'Ly 720ml', 'Ly Trơn 720ml'],
+  ['Menu', 'Nắp Hữu Phong 95mm', 'Nắp Hữu Phong 95mm'],
+  ['Menu', 'Nắp Cầu Tròn 95mm', 'Nắp Cầu Tròn 95mm'],
+  ['Menu', 'Nắp Bằng Cao 95mm', 'Nắp Bằng Cao 95mm'],
+  ['Menu', 'Nắp Hữu Phong 116mm', 'Nắp Hữu Phong 116mm'],
+  ['Menu', 'Ly Cà Phê (Nắp Thường)', 'Ly Trơn 360ml + Nắp Hữu Phong 95mm'],
+  ['Menu', 'Ly Cà Phê (Nắp Cầu)', 'Ly Trơn 360ml + Nắp Cầu Tròn 95mm'],
+  ['Menu', 'Ly Sinh Tố (Kèm Nắp)', 'Ly Trơn 650ml + Nắp Cầu Tròn 95mm'],
+  ['Menu', 'Ly Trà Tắc (Kèm Nắp)', 'Ly Trơn 720ml + Nắp Hữu Phong 116mm'],
+  ['Menu', 'Ống Cà Phê', 'Ống Hút Trong 6mm, 8mm'],
+  ['Menu', 'Ống Sinh Tố', 'Ống Hút Trong 6mm, 8mm'],
+  ['Menu', 'Muỗng Ngắn', 'Muỗng GT 150mm'],
+  ['Menu', 'Muỗng Dài', 'Muỗng GT 200mm'],
+  ['Menu', 'Bị 1 Ly', 'Bị 1 Ly, 2 Ly Lớn'],
+  ['Menu', 'Bị 2 Ly', 'Bị 1 Ly, 2 Ly Lớn'],
+  ['Menu', 'Bị Ngang', 'Bị Ngang Lớn'],
+  ['Menu', 'Bị 1 Ly (Nửa Ký)', 'Bị 1 Ly, 2 Ly Lớn ÷ 2'],
+  ['Menu', 'Bị 2 Ly (Nửa Ký)', 'Bị 1 Ly, 2 Ly Lớn ÷ 2'],
+  ['Menu', 'Bị Ngang (Nửa Ký)', 'Bị Ngang Lớn ÷ 2'],
+  ['SanPham', 'Ly Trơn 360ml', 'Ly Trơn 360ml'],
+  ['SanPham', 'Ly Trơn 500ml', 'Ly Trơn 500ml'],
+  ['SanPham', 'Ly Trơn 650ml', 'Ly Trơn 650ml'],
+  ['SanPham', 'Ly Trơn 720ml', 'Ly Trơn 720ml'],
+  ['SanPham', 'Nắp Hữu Phong 95mm', 'Nắp Hữu Phong 95mm'],
+  ['SanPham', 'Nắp Cầu Tròn 95mm', 'Nắp Cầu Tròn 95mm'],
+  ['SanPham', 'Nắp Bằng Cao 95mm', 'Nắp Bằng Cao 95mm'],
+  ['SanPham', 'Nắp Hữu Phong 116mm', 'Nắp Hữu Phong 116mm'],
+  ['SanPham', 'Ống Hút Trong 6mm', 'Ống Hút Trong 6mm, 8mm'],
+  ['SanPham', 'Ống Hút Trong 8mm', 'Ống Hút Trong 6mm, 8mm'],
+  ['SanPham', 'Muỗng GT 150mm', 'Muỗng GT 150mm'],
+  ['SanPham', 'Muỗng GT 200mm', 'Muỗng GT 200mm'],
+  ['SanPham', 'Bị 1 Ly Lớn', 'Bị 1 Ly, 2 Ly Lớn'],
+  ['SanPham', 'Bị 2 Ly Lớn', 'Bị 1 Ly, 2 Ly Lớn'],
+  ['SanPham', 'Bị Ngang Lớn', 'Bị Ngang Lớn'],
+  ['SanPham', 'Bị 40 Dương', 'Bị 40 Dương'],
+  ['SanPham', 'Bị 50 Dương', 'Bị 50 Dương']
 ];
 
 function caiDat() {
@@ -394,22 +422,58 @@ function caiDat() {
   var sh = ss.getSheetByName(TAB_DONGBO);
   if (!sh) {
     sh = ss.insertSheet(TAB_DONGBO, ss.getNumSheets());
-    var dong = [[TD_DICH, TD_TEN, TD_NGUON, TD_HESO]].concat(ANH_XA_MAC_DINH);
-    sh.getRange(1, 1, dong.length, 4).setValues(dong);
-    sh.getRange(1, 1, 1, 4).setFontWeight('bold').setBackground('#2f5233').setFontColor('#f6f1e4');
+    var dong = [[TD_DICH, TD_TEN, TD_NGUON]].concat(ANH_XA_MAC_DINH);
+    sh.getRange(1, 1, dong.length, 3).setValues(dong);
+    sh.getRange(1, 1, 1, 3).setFontWeight('bold').setBackground('#2f5233').setFontColor('#f6f1e4');
     sh.setFrozenRows(1);
-    sh.setColumnWidth(1, 90); sh.setColumnWidth(2, 210); sh.setColumnWidth(3, 300); sh.setColumnWidth(4, 70);
+    sh.setColumnWidth(1, 90); sh.setColumnWidth(2, 210); sh.setColumnWidth(3, 320);
     Logger.log('Đã tạo tab ' + TAB_DONGBO + ' với khối ánh xạ ' + ANH_XA_MAC_DINH.length + ' dòng');
   } else {
     Logger.log('Tab ' + TAB_DONGBO + ' đã có — giữ nguyên bảng ánh xạ');
   }
   chuyenCauHinh(layTabCauHinh(ss), sh, CAU_HINH_BAN_DAU);
+  gopCotHeSo(sh);
 
   var kq = tinhThayDoi();
   if (!kq.ok) { Logger.log('Lỗi: ' + kq.loi); return; }
   var doi = kq.mon.filter(function (m) { return m.trangThai !== 'giu'; });
   Logger.log('Đọc thử: ' + kq.mon.length + ' món được đồng bộ · cần đổi: ' + doi.length);
   kq.canhBao.forEach(function (c) { Logger.log('  [' + c.loai + '] ' + c.noiDung); });
+}
+
+/* Bản cũ có cột Hệ số: gộp vào cuối cột Nguồn (0,5 → "÷ 2") rồi xoá hẳn cột. Có giá trị hỏng → không đụng gì.
+   Tính giá trước và sau khi gộp để chắc không ô nào đổi. */
+function gopCotHeSo(sh) {
+  var hang = sh.getDataRange().getValues(), td = hang[0] || [];
+  var cHs = timCot(td, TD_HESO), cNg = timCot(td, TD_NGUON);
+  if (cHs < 0) return false;
+  if (cNg < 0) { Logger.log('Tab ' + TAB_DONGBO + ' có cột Hệ số nhưng thiếu cột ' + TD_NGUON + ' — chưa gộp'); return false; }
+  var sua = [], hong = [];
+  for (var i = 1; i < hang.length; i++) {
+    var v = hang[i][cHs];
+    if (v === '' || v == null) continue;
+    var hs = soThuc(v);
+    if (hs == null || hs <= 0) { hong.push('dòng ' + (i + 1) + ' "' + v + '"'); continue; }
+    var nguon = String(hang[i][cNg] || '').trim();
+    if (hs !== 1 && nguon) sua.push({ dong: i + 1, nguon: nguon + ' ' + chuPhepTinh(hs) });
+  }
+  if (hong.length) { Logger.log('Cột Hệ số có giá trị không hợp lệ (' + hong.join(', ') + ') — chưa gộp. Sửa lại rồi chạy caiDat lần nữa'); return false; }
+  var truoc = giaDuKien();
+  sua.forEach(function (x) { sh.getRange(x.dong, cNg + 1).setValue(x.nguon); Logger.log('  Nguồn dòng ' + x.dong + ': ' + x.nguon); });
+  sh.deleteColumn(cHs + 1);
+  SpreadsheetApp.flush();
+  var sau = giaDuKien(), lech = [];
+  Object.keys(truoc).concat(Object.keys(sau)).forEach(function (k) { if (truoc[k] !== sau[k] && lech.indexOf(k) < 0) lech.push(k); });
+  Logger.log('Đã gộp cột Hệ số vào cột Nguồn (' + sua.length + ' dòng) và xoá cột Hệ số — ' +
+    (lech.length ? 'LƯU Ý giá tính ra khác trước ở: ' + lech.join(', ') : 'giá tính ra không đổi (' + Object.keys(sau).length + ' ô giá)'));
+  return true;
+}
+
+/* { "Đích · Tên · Cột": giá tính ra } — để so trước/sau khi đổi bố cục */
+function giaDuKien() {
+  var kq = tinhToan(), gia = {};
+  if (kq.ok) kq.mon.forEach(function (m) { Object.keys(m.gia).forEach(function (c) { gia[m.dich + ' · ' + m.ten + ' · ' + c] = m.gia[c].moi; }); });
+  return gia;
 }
 
 /* ══════════════════ TAB CauHinh (dùng chung cho mọi công cụ — cùng đoạn code ở mọi script) ══════════════════ */

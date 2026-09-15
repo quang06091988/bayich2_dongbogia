@@ -361,10 +361,11 @@ document.addEventListener('visibilitychange', tinhLaiNeuCu);
 addEventListener('pageshow', e => { if (e.persisted) tinhLaiNeuCu(); });
 
 /* ══════════════════ MÀN 1 — kiểm tra ══════════════════ */
+/* Viết giống cột Nguồn trong tab DongBo: "= A + B", "= Bị Ngang Lớn ÷ 2" */
 function chuNguon(m) {
-  const hs = m.heSo !== 1 ? (m.heSo === 0.5 ? '½ × ' : String(m.heSo).replace('.', ',') + ' × ') : '';
-  if (m.nguon.length > 1) return '= ' + hs + m.nguon.join(' + ');
-  if (hs) return hs + m.nguon[0];
+  const n = 1 / m.heSo;
+  const pt = m.heSo === 1 ? '' : Math.abs(n - Math.round(n)) < 1e-9 ? ' ÷ ' + Math.round(n) : ' × ' + String(m.heSo).replace('.', ',');
+  if (m.nguon.length > 1 || pt) return '= ' + m.nguon.join(' + ') + pt;
   return m.nguon[0] !== m.ten ? '← ' + m.nguon[0] : '';
 }
 function htmlMon(m) {

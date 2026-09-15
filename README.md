@@ -11,15 +11,18 @@ Retail đổi giá → cập nhật một lần cho:
 Tên hàng giữa các tab không giống nhau (`Ly Trơn 360ml` ↔ `Ly 360ml`…), nên ánh xạ khai ở
 **tab `DongBo` trong sheet bayich2**:
 
-| Đích | Tên ở đích | Nguồn (Retail) | Hệ số |
-|---|---|---|---|
-| Menu | Ly 360ml | Ly Trơn 360ml | |
-| Menu | Ly Cà Phê (Nắp Thường) | Ly Trơn 360ml + Nắp Hữu Phong 95mm | |
-| Menu | Bị Ngang (Nửa Ký) | Bị Ngang Lớn | 0,5 |
-| SanPham | Ống Hút Trong 6mm | Ống Hút Trong 6mm, 8mm | |
+| Đích | Tên ở đích | Nguồn (Retail) |
+|---|---|---|
+| Menu | Ly 360ml | Ly Trơn 360ml |
+| Menu | Ly Cà Phê (Nắp Thường) | Ly Trơn 360ml + Nắp Hữu Phong 95mm |
+| Menu | Bị Ngang (Nửa Ký) | Bị Ngang Lớn ÷ 2 |
+| SanPham | Ống Hút Trong 6mm | Ống Hút Trong 6mm, 8mm |
 
 - Món ghép: nối nguồn bằng `+` → giá = tổng giá làm tròn các thành phần.
-- Hệ số (trống = 1): giá = hệ số × tổng, rồi làm tròn 1.000 (Giá Sỉ làm tròn tới đồng).
+- Phép tính ở cuối Nguồn, áp cho cả tổng: `÷ 2`, `/ 2`, `: 2`, `× 0,5`, `x 0,5`, `* 0.5`, hoặc `½` ở đầu.
+  Giá = tổng × hệ số, rồi làm tròn theo "Bước làm tròn" trong tab CauHinh (Giá Sỉ làm tròn tới đồng).
+  Tên Retail luôn được khớp trước, nên tên có dấu phẩy hay chữ số không bị hiểu nhầm là phép tính.
+- Bản cũ có cột **Hệ số**: chạy `caiDat` một lần để gộp vào cột Nguồn (cột Hệ số bị xoá, giá không đổi).
 - Món không có trong DongBo (Gạo, Lúa - Bắp…) không bao giờ bị đụng tới.
 
 ## Cấu trúc
