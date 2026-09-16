@@ -2,15 +2,14 @@
  * Apps Script STANDALONE "bayich2_dongbogia" — backend của trang Đồng Bộ Giá
  * (bayich2-dongbogia.vercel.app).
  *
- * Đồng bộ giá từ tab Retail (sheet bayich2) sang:
- *   - tab Menu    (sheet bayich2)  : Giá     = Giá Làm Tròn          ← giá bán
- *   - tab SanPham (sheet vanbaobi) : Giá Lẻ  = Giá Làm Tròn          ← giá bán
- *                                    Giá Sỉ  = Giá Nhập Lẻ
+ * Đồng bộ giá từ tab Retail (sheet bayich2) sang tab Menu (sheet bayich2): Giá = Giá Làm Tròn ← giá bán,
  * theo khối ánh xạ trong tab DongBo (sheet bayich2).
+ * Từ 2026-09-16 KHÔNG đồng bộ sang tab SanPham của sheet Vân Bao Bì nữa (SanPham công khai → lộ giá nhập, % lãi):
+ * dòng DongBo có Đích "SanPham" chỉ bị bỏ qua kèm lưu ý; caiDat xoá chúng. Giá Vân Bao Bì sửa tay trong sheet vanbaobi.
  *
  *  ĐỌC : doPost {hanhDong:'xemTruoc', pin} → danh sách món và giá dự kiến, KHÔNG ghi gì — cần Mã PIN chung.
  *  GHI : doPost {hanhDong:'dongBo', pin, chon:[{dich, ten, cot, cu, moi}]} — cần Mã PIN chung (tab CauHinh)
- *        rồi tô dòng vừa ghi:  ĐỎ = có đổi giá bán · XANH = chỉ đổi Giá Sỉ
+ *        rồi tô dòng vừa ghi:  ĐỎ = có đổi giá bán · XANH = chỉ đổi cột không phải giá bán (Menu hiện chỉ có giá bán)
  *
  * An toàn dù web app mở cho "Bất kỳ ai": máy chủ TỰ TÍNH giá từ Retail, client không bao giờ gửi giá
  * để ghi. `cu`/`moi` chỉ để đối chiếu: một ô chỉ được ghi khi giá đang có == cu VÀ giá tính lại == moi.
@@ -18,7 +17,7 @@
  * Tab DongBo: bảng ánh xạ Đích | Tên ở đích | Nguồn (Retail) (tìm theo CHỮ TIÊU ĐỀ)
  *     → món ghép: "A + B" (giá = tổng) · món nửa ký: "Bị Ngang Lớn ÷ 2" (phép tính ở cuối, áp cho cả tổng)
  * Tab CauHinh: cấu hình dùng chung cho mọi công cụ — Trường | Giá trị | Ghi chú | Dùng cho
- *     (sheet Vân Bao Bì, bước làm tròn, ngưỡng cảnh báo, màu…) — tab riêng tư, KHÔNG xuất bản lên web.
+ *     (bước làm tròn, ngưỡng cảnh báo, màu…) — tab riêng tư, KHÔNG xuất bản lên web.
  *
  * CÀI / NÂNG CẤP: chọn hàm caiDat → Run. Tạo tab còn thiếu, thêm trường còn thiếu vào CauHinh; bản cũ để cấu hình
  * trong tab DongBo (cột F:H) thì chép sang CauHinh rồi xoá khối cũ (bảng ánh xạ giữ nguyên). Chạy lại không sao.
@@ -38,7 +37,6 @@ var TD_TRUONG = 'Trường', TD_GIA_TRI = 'Giá trị', TD_GHI_CHU = 'Ghi chú',
 
 /* Trường trong tab CauHinh → khoá dùng trong code (bietDanh: tên cũ vẫn nhận) */
 var TRUONG = [
-  { khoa: 'sheetVanBaoBi', ten: 'Sheet Vân Bao Bì',      kieu: 'idSheet' },
   { khoa: 'buocLamTron',   ten: 'Bước làm tròn',         kieu: 'so' },
   { khoa: 'nguongNhay',    ten: 'Cảnh báo giá nhảy (%)', kieu: 'so' },
   { khoa: 'mauDo',         ten: 'Màu đổi giá bán',       kieu: 'mau' },
@@ -51,12 +49,10 @@ var DICH = {
   Menu: {
     tab: 'Menu', cotTen: 'Tên sản phẩm',
     cot: [{ ten: 'Giá', tinh: 'lamTron', giaBan: true }]
-  },
-  SanPham: {
-    tab: 'SanPham', cotTen: 'Tên',
-    cot: [{ ten: 'Giá Lẻ', tinh: 'lamTron', giaBan: true }, { ten: 'Giá Sỉ', tinh: 'nhapLe', giaBan: false }]
   }
 };
+/* Đã ngừng (2026-09-16): đích SanPham (sheet Vân Bao Bì) và trường cấu hình của nó — còn trong Sheet thì bỏ qua, caiDat dọn */
+var DICH_DA_BO = 'SanPham', TRUONG_DA_BO = 'Sheet Vân Bao Bì';
 
 var TOI_DA_O_GHI = 300;
 
@@ -171,10 +167,6 @@ function tinhToan() {
   if (retail.loi) return { ok: false, loi: retail.loi };
 
   var bang = { Menu: docDich(ssB, DICH.Menu, canhBao) };
-  if (ch.sheetVanBaoBi) {
-    try { bang.SanPham = docDich(SpreadsheetApp.openById(ch.sheetVanBaoBi), DICH.SanPham, canhBao); }
-    catch (err) { canhBao.push(loi('Không mở được Sheet Vân Bao Bì: ' + err.message)); }
-  }
 
   var mon = [], daDung = {}, daKhai = {};
   db.anhXa.forEach(function (m) {
@@ -272,11 +264,10 @@ function docDongBo(ss, canhBao) {
     if (v === undefined) { canhBao.push(loi('Tab ' + TAB_CAU_HINH + ' thiếu trường "' + t.ten + '" — mở Apps Script, chạy hàm caiDat một lần để thêm')); return; }
     cauHinh[t.khoa] = docGiaTri(v, t.kieu);
     if (cauHinh[t.khoa] == null && String(v).trim() !== '') canhBao.push(loi('Trường "' + t.ten + '" có giá trị không hợp lệ: ' + v));
-    else if (cauHinh[t.khoa] == null && t.khoa === 'sheetVanBaoBi') canhBao.push(luuY('"Sheet Vân Bao Bì" để trống — không đồng bộ SanPham'));
   });
   if (conCu) canhBao.push(luuY('Cấu hình còn nằm ở tab ' + TAB_DONGBO + ' — mở Apps Script, chạy hàm caiDat một lần để chuyển sang tab ' + TAB_CAU_HINH));
 
-  var anhXa = [], conCotHeSo = false;
+  var anhXa = [], conCotHeSo = false, soDongDaBo = 0;
   if (c.dich < 0 || c.ten < 0 || c.nguon < 0) canhBao.push(loi('Tab DongBo thiếu tiêu đề khối ánh xạ (' + [TD_DICH, TD_TEN, TD_NGUON].join(' | ') + ')'));
   else {
     for (var j = 1; j < hang.length; j++) {
@@ -285,9 +276,10 @@ function docDongBo(ss, canhBao) {
       var heSoTho = c.heSo < 0 ? '' : d[c.heSo];
       if (!dichTho && !ten && !nguonTho) continue;   // dòng trống (hoặc dòng chỉ thuộc khối cấu hình)
 
+      if (chuanHoa(dichTho) === chuanHoa(DICH_DA_BO)) { soDongDaBo++; continue; }   // đích đã ngừng — bỏ qua, không báo lỗi
       var dich = null;
       Object.keys(DICH).forEach(function (k) { if (chuanHoa(k) === chuanHoa(dichTho)) dich = k; });
-      if (!dich) { canhBao.push(loi('DongBo dòng ' + dong + ': Đích "' + dichTho + '" không hợp lệ (chỉ nhận Menu hoặc SanPham)')); continue; }
+      if (!dich) { canhBao.push(loi('DongBo dòng ' + dong + ': Đích "' + dichTho + '" không hợp lệ (chỉ nhận ' + Object.keys(DICH).join(', ') + ')')); continue; }
       if (!ten || !nguonTho) { canhBao.push(loi('DongBo dòng ' + dong + ': thiếu Tên ở đích hoặc Nguồn')); continue; }
       var heSoCot = heSoTho === '' || heSoTho == null ? 1 : soThuc(heSoTho);
       if (heSoCot == null || heSoCot <= 0) { canhBao.push(loi('DongBo dòng ' + dong + ': Hệ số "' + heSoTho + '" không hợp lệ')); continue; }
@@ -295,6 +287,7 @@ function docDongBo(ss, canhBao) {
       anhXa.push({ dong: dong, dich: dich, ten: ten, nguonTho: nguonTho, heSoCot: heSoCot });   // tách nguồn khi đã có Retail
     }
   }
+  if (soDongDaBo) canhBao.push(luuY('Đã ngừng đồng bộ Vân Bao Bì — tab ' + TAB_DONGBO + ' còn ' + soDongDaBo + ' dòng Đích "' + DICH_DA_BO + '" (bỏ qua). Mở Apps Script, chạy hàm caiDat một lần để dọn'));
   if (conCotHeSo) canhBao.push(luuY('Cột Hệ số sẽ gộp vào cột Nguồn (vd "Bị Ngang Lớn ÷ 2") — mở Apps Script, chạy hàm caiDat một lần'));
   return { anhXa: anhXa, cauHinh: cauHinh };
 }
@@ -359,10 +352,6 @@ function docGiaTri(v, kieu) {
   if (kieu === 'so') { var n = soThuc(v); return n != null && n > 0 ? n : null; }
   if (kieu === 'mau') return /^#[0-9a-f]{6}$/i.test(s) ? s : null;
   if (kieu === 'coKhong') { var c = chuanHoa(s); return c === 'co' ? true : c === 'khong' ? false : null; }
-  if (kieu === 'idSheet') {   // nhận cả link lẫn ID trần
-    var m = s.match(/\/d\/([a-zA-Z0-9_-]{25,})/) || s.match(/^([a-zA-Z0-9_-]{25,})$/);
-    return m ? m[1] : null;
-  }
   return s;
 }
 
@@ -373,7 +362,6 @@ function docGiaTri(v, kieu) {
    Trường dùng chung với Đối chiếu toa (bước làm tròn, cảnh báo, màu, xoá màu cũ) có cùng tên, cùng dòng ở cả 2 script. */
 var DUNG_CHUNG = 'Đối chiếu toa, Đồng bộ giá';
 var CAU_HINH_BAN_DAU = [
-  ['Sheet Vân Bao Bì', 'https://docs.google.com/spreadsheets/d/1_uLLmtux8CgvGLZTHgK8oE6EdjOAppXC934Ro7Dv5o8/edit', 'Link hoặc ID sheet có tab SanPham. Để trống = không đồng bộ SanPham', 'Đồng bộ giá'],
   ['Bước làm tròn', 1000, 'Giá bán làm tròn tới bội số này — cột Giá Làm Tròn của Retail, Đối chiếu toa và Đồng bộ giá cùng theo dòng này. Ghi số liền, không dấu chấm (vd 1000)', 'Retail, ' + DUNG_CHUNG],
   ['Cảnh báo giá nhảy (%)', 30, 'Giá đổi từ mức này trở lên → bỏ tích sẵn để xem lại', DUNG_CHUNG],
   ['Màu đổi giá bán', '#f4cccc', 'Tô dòng có đổi giá bán. Để trống = không tô', DUNG_CHUNG],
@@ -402,24 +390,7 @@ var ANH_XA_MAC_DINH = [
   ['Menu', 'Bị Ngang', 'Bị Ngang Lớn'],
   ['Menu', 'Bị 1 Ly (Nửa Ký)', 'Bị 1 Ly, 2 Ly Lớn ÷ 2'],
   ['Menu', 'Bị 2 Ly (Nửa Ký)', 'Bị 1 Ly, 2 Ly Lớn ÷ 2'],
-  ['Menu', 'Bị Ngang (Nửa Ký)', 'Bị Ngang Lớn ÷ 2'],
-  ['SanPham', 'Ly Trơn 360ml', 'Ly Trơn 360ml'],
-  ['SanPham', 'Ly Trơn 500ml', 'Ly Trơn 500ml'],
-  ['SanPham', 'Ly Trơn 650ml', 'Ly Trơn 650ml'],
-  ['SanPham', 'Ly Trơn 720ml', 'Ly Trơn 720ml'],
-  ['SanPham', 'Nắp Hữu Phong 95mm', 'Nắp Hữu Phong 95mm'],
-  ['SanPham', 'Nắp Cầu Tròn 95mm', 'Nắp Cầu Tròn 95mm'],
-  ['SanPham', 'Nắp Bằng Cao 95mm', 'Nắp Bằng Cao 95mm'],
-  ['SanPham', 'Nắp Hữu Phong 116mm', 'Nắp Hữu Phong 116mm'],
-  ['SanPham', 'Ống Hút Trong 6mm', 'Ống Hút Trong 6mm, 8mm'],
-  ['SanPham', 'Ống Hút Trong 8mm', 'Ống Hút Trong 6mm, 8mm'],
-  ['SanPham', 'Muỗng GT 150mm', 'Muỗng GT 150mm'],
-  ['SanPham', 'Muỗng GT 200mm', 'Muỗng GT 200mm'],
-  ['SanPham', 'Bị 1 Ly Lớn', 'Bị 1 Ly, 2 Ly Lớn'],
-  ['SanPham', 'Bị 2 Ly Lớn', 'Bị 1 Ly, 2 Ly Lớn'],
-  ['SanPham', 'Bị Ngang Lớn', 'Bị Ngang Lớn'],
-  ['SanPham', 'Bị 40 Dương', 'Bị 40 Dương'],
-  ['SanPham', 'Bị 50 Dương', 'Bị 50 Dương']
+  ['Menu', 'Bị Ngang (Nửa Ký)', 'Bị Ngang Lớn ÷ 2']
 ];
 
 function caiDat() {
@@ -438,6 +409,7 @@ function caiDat() {
   }
   chuyenCauHinh(layTabCauHinh(ss), sh, CAU_HINH_BAN_DAU);
   gopCotHeSo(sh);
+  donVanBaoBi(ss, sh);
 
   var kq = tinhThayDoi();
   if (!kq.ok) { Logger.log('Lỗi: ' + kq.loi); return; }
@@ -472,6 +444,28 @@ function gopCotHeSo(sh) {
   Logger.log('Đã gộp cột Hệ số vào cột Nguồn (' + sua.length + ' dòng) và xoá cột Hệ số — ' +
     (lech.length ? 'LƯU Ý giá tính ra khác trước ở: ' + lech.join(', ') : 'giá tính ra không đổi (' + Object.keys(sau).length + ' ô giá)'));
   return true;
+}
+
+/* Ngừng đồng bộ Vân Bao Bì: xoá các dòng Đích "SanPham" ở tab DongBo và dòng "Sheet Vân Bao Bì" ở tab CauHinh.
+   Xoá từ dưới lên để số dòng không lệch. Tính giá Menu trước và sau để chắc không ô nào đổi. Chạy lại không xoá gì thêm. */
+function donVanBaoBi(ss, sh) {
+  var xoaTheo = function (tab, cot, ten) {
+    if (!tab) return 0;
+    var hang = tab.getDataRange().getValues(), c = timCot(hang[0] || [], cot), n = 0;
+    if (c < 0) return 0;
+    for (var i = hang.length - 1; i >= 1; i--) if (chuanHoa(hang[i][c]) === chuanHoa(ten)) { tab.deleteRow(i + 1); n++; }
+    return n;
+  };
+  var truoc = giaDuKien();
+  var soDB = xoaTheo(sh, TD_DICH, DICH_DA_BO), soCH = xoaTheo(ss.getSheetByName(TAB_CAU_HINH), TD_TRUONG, TRUONG_DA_BO);
+  if (!soDB && !soCH) return 0;
+  SpreadsheetApp.flush();
+  var sau = giaDuKien(), lech = [];
+  Object.keys(truoc).concat(Object.keys(sau)).forEach(function (k) { if (truoc[k] !== sau[k] && lech.indexOf(k) < 0) lech.push(k); });
+  Logger.log('Ngừng đồng bộ Vân Bao Bì: xoá ' + soDB + ' dòng Đích "' + DICH_DA_BO + '" ở tab ' + TAB_DONGBO + ', ' + soCH +
+    ' dòng "' + TRUONG_DA_BO + '" ở tab ' + TAB_CAU_HINH + ' — ' +
+    (lech.length ? 'LƯU Ý giá tính ra khác trước ở: ' + lech.join(', ') : 'giá Menu tính ra không đổi (' + Object.keys(sau).length + ' ô giá)'));
+  return soDB + soCH;
 }
 
 /* { "Đích · Tên · Cột": giá tính ra } — để so trước/sau khi đổi bố cục */

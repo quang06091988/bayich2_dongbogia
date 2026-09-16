@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Đồng Bộ Giá — Bảy Ích 2</title>
-<meta name="description" content="Đồng bộ giá từ tab Retail sang Menu Bảy Ích 2 và bảng giá Vân Bao Bì.">
+<meta name="description" content="Đồng bộ giá từ tab Retail sang Menu Bảy Ích 2.">
 <meta name="theme-color" content="#2f5233">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://bayich2-dongbogia.vercel.app/">
 <meta property="og:site_name" content="Tạp Hóa Bảy Ích 2">
 <meta property="og:title" content="Đồng Bộ Giá — Bảy Ích 2">
-<meta property="og:description" content="Retail đổi giá → cập nhật Menu và Vân Bao Bì trong một lần bấm.">
+<meta property="og:description" content="Retail đổi giá → cập nhật Menu Bảy Ích 2 trong một lần bấm.">
 <meta property="og:image" content="https://bayich2-dongbogia.vercel.app/og.png">
 <meta property="og:image:secure_url" content="https://bayich2-dongbogia.vercel.app/og.png">
 <meta property="og:image:type" content="image/png">
@@ -21,7 +21,7 @@
 <meta property="og:locale" content="vi_VN">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Đồng Bộ Giá — Bảy Ích 2">
-<meta name="twitter:description" content="Retail đổi giá → cập nhật Menu và Vân Bao Bì trong một lần bấm.">
+<meta name="twitter:description" content="Retail đổi giá → cập nhật Menu Bảy Ích 2 trong một lần bấm.">
 <meta name="twitter:image" content="https://bayich2-dongbogia.vercel.app/og.png">
 <link rel="canonical" href="https://bayich2-dongbogia.vercel.app/">
 
@@ -91,7 +91,7 @@ main{padding-top:14px}
 .canh .nut{margin-top:8px;min-height:38px;padding:7px 14px;font-size:14px}
 
 /* ── tóm tắt ── */
-.tom-tat{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
+.tom-tat{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;margin-bottom:14px}   /* 4 hoặc 5 ô — tự chia đều */
 .o-tt{background:var(--giay);border:1px solid var(--vien);border-radius:12px;padding:8px 6px;text-align:center}
 .o-tt b{display:block;font-family:'Fraunces',serif;font-size:20px;line-height:1.15}
 .o-tt span{display:block;font-size:10.5px;line-height:1.25;color:var(--mo)}
@@ -198,7 +198,7 @@ details.gap[open] summary::before{transform:rotate(90deg)}
 <header class="dau-trang">
   <div class="wrap">
     <h1>Đồng bộ giá</h1>
-    <p>Retail → Menu Bảy Ích 2 · SanPham Vân Bao Bì</p>
+    <p>Retail → Menu Bảy Ích 2</p>
     <div class="trang-thai">
       <span id="tt">Đang tải…</span>
       <button class="nut-tron" id="nut-tai" aria-label="Tính lại từ giá mới nhất" title="Tính lại từ giá mới nhất">↻</button>
@@ -249,7 +249,7 @@ details.gap[open] summary::before{transform:rotate(90deg)}
    và được máy chủ tính sẵn. Trong code chỉ còn link Apps Script và tên hiển thị 2 tiệm.
    ══════════════════════════════════════════════════════════ */
 const API = 'https://script.google.com/macros/s/AKfycbz767Ti7iftH6thPYqdMfr7YqDnT4ntOwZT5vMj9Ox7T6v4FCJwrrWsx8FLtp0JQfVy/exec';
-const TEN_DICH = { Menu: 'Bảy Ích 2 · Menu', SanPham: 'Vân Bao Bì · SanPham' };
+const TEN_DICH = { Menu: 'Bảy Ích 2 · Menu' };   // đã ngừng đồng bộ SanPham (Vân Bao Bì) từ 2026-09-16
 
 /* ══════════════════ tiện ích ══════════════════ */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -443,7 +443,7 @@ function ve() {
   const mon = DL.mon, loi = DL.canhBao.filter(c => c.loai === 'loi'), luuY = DL.canhBao.filter(c => c.loai !== 'loi');
   const dem = t => mon.filter(m => m.trangThai === t).length;
   const o = (so, chu, lop) => `<div class="o-tt ${lop}${so ? '' : ' rong'}"><b>${so}</b><span>${chu}</span></div>`;
-  $('#tom-tat').innerHTML = o(dem('do'), 'Đổi giá bán', 'do') + o(dem('xanh'), 'Chỉ đổi giá sỉ', 'xanh')
+  $('#tom-tat').innerHTML = o(dem('do'), 'Đổi giá bán', 'do') + (dem('xanh') ? o(dem('xanh'), 'Chỉ đổi giá sỉ', 'xanh') : '')
     + o(mon.filter(canXem).length, 'Cần xem lại', 'vang') + o(dem('giu'), 'Đã khớp', '') + o(loi.length, 'Lỗi ánh xạ', loi.length ? 'do' : '');
 
   $('#tb-dl').innerHTML =
@@ -460,7 +460,7 @@ function ve() {
       ${ds.map(htmlMon).join('')}</section>`;
   }
   const giu = mon.filter(m => m.trangThai === 'giu');
-  if (!h && !loi.length) h = '<div class="canh ok"><b>Tất cả đã khớp với Retail</b>Menu Bảy Ích 2 và bảng giá Vân Bao Bì đang đúng giá — không cần ghi gì.</div>';
+  if (!h && !loi.length) h = '<div class="canh ok"><b>Tất cả đã khớp với Retail</b>Menu Bảy Ích 2 đang đúng giá — không cần ghi gì.</div>';
   if (giu.length) h += `<details class="gap"><summary>Đã khớp (${giu.length})</summary>${giu.map(m =>
     `<div class="dong-gon"><span>${thoat(m.ten)} <i>${thoat(TEN_DICH[m.dich] || m.dich)}</i></span><span class="phai">${Object.values(m.gia).map(g => dinh(g.moi)).join(' · ')}</span></div>`).join('')}</details>`;
   $('#ds').innerHTML = h;
@@ -551,7 +551,7 @@ function veKetQua(r) {
   }
   $('#ket-qua').innerHTML = `
     <div class="xong"><div class="dau-tich">✓</div><h2>Đã cập nhật ${(r.daGhi || []).length} món</h2>
-      <p>${r.soDo} đổi giá bán · ${r.soXanh} chỉ đổi giá sỉ — đã tô màu trong Sheet</p>
+      <p>${r.soDo} đổi giá bán${r.soXanh ? ` · ${r.soXanh} chỉ đổi giá sỉ` : ''} — đã tô màu trong Sheet</p>
       ${r.xacMinh ? '<p style="font-size:12.5px">Google báo lỗi đường truyền nhưng đã kiểm tra lại: dữ liệu đã vào Sheet.</p>' : ''}</div>
     <ul class="ds-kq">${ds}</ul>
     ${r.boQua?.length ? `<div style="padding:12px 16px 0"><div class="canh"><b>Bỏ qua ${r.boQua.length} ô</b><ul>${r.boQua.map(x => `<li>${thoat(x.ten)} · ${thoat(x.cot)}: ${thoat(x.lyDo)}</li>`).join('')}</ul></div></div>` : ''}
