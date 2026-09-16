@@ -5,8 +5,8 @@ Retail đổi giá → cập nhật một lần cho:
 | Đích | Cột | Lấy từ Retail |
 |---|---|---|
 | Sheet **bayich2** · tab **Menu** | Giá | Giá Làm Tròn |
-| Sheet **vanbaobi** · tab **SanPham** | Giá Lẻ | Giá Làm Tròn |
-| | Giá Sỉ | Giá Nhập Lẻ |
+
+Từ 2026-09-16 không còn đồng bộ sang sheet khác. Dòng DongBo còn ghi Đích khác Menu (bản cũ) bị bỏ qua; `caiDat` dọn chúng.
 
 Tên hàng giữa các tab không giống nhau (`Ly Trơn 360ml` ↔ `Ly 360ml`…), nên ánh xạ khai ở
 **tab `DongBo` trong sheet bayich2**:
@@ -16,11 +16,11 @@ Tên hàng giữa các tab không giống nhau (`Ly Trơn 360ml` ↔ `Ly 360ml`�
 | Menu | Ly 360ml | Ly Trơn 360ml |
 | Menu | Ly Cà Phê (Nắp Thường) | Ly Trơn 360ml + Nắp Hữu Phong 95mm |
 | Menu | Bị Ngang (Nửa Ký) | Bị Ngang Lớn ÷ 2 |
-| SanPham | Ống Hút Trong 6mm | Ống Hút Trong 6mm, 8mm |
+| Menu | Ống Cà Phê | Ống Hút Trong 6mm, 8mm |
 
 - Món ghép: nối nguồn bằng `+` → giá = tổng giá làm tròn các thành phần.
 - Phép tính ở cuối Nguồn, áp cho cả tổng: `÷ 2`, `/ 2`, `: 2`, `× 0,5`, `x 0,5`, `* 0.5`, hoặc `½` ở đầu.
-  Giá = tổng × hệ số, rồi làm tròn theo "Bước làm tròn" trong tab CauHinh (Giá Sỉ làm tròn tới đồng).
+  Giá = tổng × hệ số, rồi làm tròn theo "Bước làm tròn" trong tab CauHinh.
   Tên Retail luôn được khớp trước, nên tên có dấu phẩy hay chữ số không bị hiểu nhầm là phép tính.
 - Bản cũ có cột **Hệ số**: chạy `caiDat` một lần để gộp vào cột Nguồn (cột Hệ số bị xoá, giá không đổi).
 - Món không có trong DongBo (Gạo, Lúa - Bắp…) không bao giờ bị đụng tới.
@@ -40,8 +40,8 @@ appsscript/       backend — Apps Script STANDALONE "bayich2_dongbogia" (không
 
 Backend là web app quyền "Bất kỳ ai", nhưng **máy chủ tự tính giá từ Retail** — trang web chỉ gửi
 "ghi những món nào" kèm giá cũ/mới đã thấy lúc xem trước. Một ô chỉ được ghi khi giá đang có và giá
-tính lại đều khớp. Người lạ có link cũng không chèn được giá tuỳ ý. Lệnh ghi còn cần **Mã PIN chung** (tab CauHinh),
-nhập một lần trên mỗi máy; xem trước không cần PIN.
+tính lại đều khớp. Người lạ có link cũng không chèn được giá tuỳ ý. Cả xem trước lẫn ghi đều cần **Mã PIN chung**
+(tab CauHinh), nhập một lần trên mỗi máy.
 
 ## Sửa backend
 
@@ -53,4 +53,4 @@ clasp push                  # đẩy code lên bản nháp
 clasp deploy -i AKfycbz767Ti7iftH6thPYqdMfr7YqDnT4ntOwZT5vMj9Ox7T6v4FCJwrrWsx8FLtp0JQfVy -d "mô tả"   # giữ nguyên link /exec
 ```
 
-Cài lần đầu: mở script → chọn hàm `caiDat` → Run → Cho phép (tạo tab DongBo + xin quyền 2 sheet).
+Cài lần đầu: mở script → chọn hàm `caiDat` → Run → Cho phép (tạo tab DongBo, thêm trường vào CauHinh).
