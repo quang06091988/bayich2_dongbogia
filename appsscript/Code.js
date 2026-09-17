@@ -4,8 +4,6 @@
  *
  * Đồng bộ giá từ tab Retail (sheet bayich2) sang tab Menu (sheet bayich2): Giá = Giá Làm Tròn ← giá bán,
  * theo khối ánh xạ trong tab DongBo (sheet bayich2).
- * Từ 2026-09-16 KHÔNG đồng bộ sang tab SanPham của sheet Vân Bao Bì nữa (SanPham công khai → lộ giá nhập, % lãi):
- * dòng DongBo có Đích "SanPham" chỉ bị bỏ qua kèm lưu ý; caiDat xoá chúng. Giá Vân Bao Bì sửa tay trong sheet vanbaobi.
  *
  *  ĐỌC : doPost {hanhDong:'xemTruoc', pin} → danh sách món và giá dự kiến, KHÔNG ghi gì — cần Mã PIN chung.
  *  GHI : doPost {hanhDong:'dongBo', pin, chon:[{dich, ten, cot, cu, moi}]} — cần Mã PIN chung (tab CauHinh)
@@ -31,7 +29,6 @@ var TAB_DONGBO = 'DongBo';
 var COT_RETAIL = { ten: 'Mặt Hàng', giaNhapLe: 'Giá Nhập Lẻ', giaLamTron: 'Giá Làm Tròn' };
 
 var TD_DICH = 'Đích', TD_TEN = 'Tên ở đích', TD_NGUON = 'Nguồn (Retail)';
-var TD_HESO = 'Hệ số';   // cột của bản cũ — chỉ còn để đọc tạm và để caiDat gộp vào cột Nguồn
 var TAB_CAU_HINH = 'CauHinh';
 var TD_TRUONG = 'Trường', TD_GIA_TRI = 'Giá trị', TD_GHI_CHU = 'Ghi chú', TD_DUNG_CHO = 'Dùng cho';
 
@@ -51,8 +48,6 @@ var DICH = {
     cot: [{ ten: 'Giá', tinh: 'lamTron', giaBan: true }]
   }
 };
-/* Đã ngừng (2026-09-16): đích SanPham (sheet Vân Bao Bì) và trường cấu hình của nó — còn trong Sheet thì bỏ qua, caiDat dọn */
-var DICH_DA_BO = 'SanPham', TRUONG_DA_BO = 'Sheet Vân Bao Bì';
 
 var TOI_DA_O_GHI = 300;
 
@@ -186,8 +181,7 @@ function tinhToan() {
 
     var tach = tachNguon(m.nguonTho, retail.theoTen);
     if (tach.loi) { canhBao.push(loi('DongBo dòng ' + m.dong + ': ' + tach.loi)); return; }
-    if (tach.heSo !== 1 && m.heSoCot !== 1) { canhBao.push(loi('DongBo dòng ' + m.dong + ': hệ số ghi 2 chỗ (cột Hệ số và cột Nguồn) — chỉ giữ một chỗ')); return; }
-    var heSo = tach.heSo !== 1 ? tach.heSo : m.heSoCot, nguon = tach.nguon;
+    var heSo = tach.heSo, nguon = tach.nguon;
     nguon.forEach(function (r) { daDung[chuanHoa(r.ten)] = true; });
 
     var tongTron = 0, tongNhapLe = 0, thieuGia = [];
@@ -250,7 +244,7 @@ function docDongBo(ss, canhBao) {
   if (!sh) return { loi: 'Chưa có tab ' + TAB_DONGBO + ' trong sheet bayich2 — mở Apps Script, chạy hàm caiDat một lần' };
   var hang = sh.getDataRange().getValues(), td = hang[0] || [];
   var c = {
-    dich: timCot(td, TD_DICH), ten: timCot(td, TD_TEN), nguon: timCot(td, TD_NGUON), heSo: timCot(td, TD_HESO),
+    dich: timCot(td, TD_DICH), ten: timCot(td, TD_TEN), nguon: timCot(td, TD_NGUON),
     truong: timCot(td, TD_TRUONG), giaTri: timCot(td, TD_GIA_TRI)
   };
 
@@ -267,28 +261,21 @@ function docDongBo(ss, canhBao) {
   });
   if (conCu) canhBao.push(luuY('Cấu hình còn nằm ở tab ' + TAB_DONGBO + ' — mở Apps Script, chạy hàm caiDat một lần để chuyển sang tab ' + TAB_CAU_HINH));
 
-  var anhXa = [], conCotHeSo = false, soDongDaBo = 0;
+  var anhXa = [];
   if (c.dich < 0 || c.ten < 0 || c.nguon < 0) canhBao.push(loi('Tab DongBo thiếu tiêu đề khối ánh xạ (' + [TD_DICH, TD_TEN, TD_NGUON].join(' | ') + ')'));
   else {
     for (var j = 1; j < hang.length; j++) {
       var dong = j + 1, d = hang[j];
       var dichTho = String(d[c.dich] || '').trim(), ten = String(d[c.ten] || '').trim(), nguonTho = String(d[c.nguon] || '').trim();
-      var heSoTho = c.heSo < 0 ? '' : d[c.heSo];
       if (!dichTho && !ten && !nguonTho) continue;   // dòng trống (hoặc dòng chỉ thuộc khối cấu hình)
 
-      if (chuanHoa(dichTho) === chuanHoa(DICH_DA_BO)) { soDongDaBo++; continue; }   // đích đã ngừng — bỏ qua, không báo lỗi
       var dich = null;
       Object.keys(DICH).forEach(function (k) { if (chuanHoa(k) === chuanHoa(dichTho)) dich = k; });
       if (!dich) { canhBao.push(loi('DongBo dòng ' + dong + ': Đích "' + dichTho + '" không hợp lệ (chỉ nhận ' + Object.keys(DICH).join(', ') + ')')); continue; }
       if (!ten || !nguonTho) { canhBao.push(loi('DongBo dòng ' + dong + ': thiếu Tên ở đích hoặc Nguồn')); continue; }
-      var heSoCot = heSoTho === '' || heSoTho == null ? 1 : soThuc(heSoTho);
-      if (heSoCot == null || heSoCot <= 0) { canhBao.push(loi('DongBo dòng ' + dong + ': Hệ số "' + heSoTho + '" không hợp lệ')); continue; }
-      if (heSoCot !== 1) conCotHeSo = true;
-      anhXa.push({ dong: dong, dich: dich, ten: ten, nguonTho: nguonTho, heSoCot: heSoCot });   // tách nguồn khi đã có Retail
+      anhXa.push({ dong: dong, dich: dich, ten: ten, nguonTho: nguonTho });   // tách nguồn khi đã có Retail
     }
   }
-  if (soDongDaBo) canhBao.push(luuY('Đã ngừng đồng bộ Vân Bao Bì — tab ' + TAB_DONGBO + ' còn ' + soDongDaBo + ' dòng Đích "' + DICH_DA_BO + '" (bỏ qua). Mở Apps Script, chạy hàm caiDat một lần để dọn'));
-  if (conCotHeSo) canhBao.push(luuY('Cột Hệ số sẽ gộp vào cột Nguồn (vd "Bị Ngang Lớn ÷ 2") — mở Apps Script, chạy hàm caiDat một lần'));
   return { anhXa: anhXa, cauHinh: cauHinh };
 }
 
@@ -316,10 +303,7 @@ function tachNguon(tho, theoTen) {
   return { nguon: k.ds, heSo: heSo };
 }
 function soPhepTinh(s) { return parseFloat(String(s).replace(',', '.')); }   // "0,5" / "0.5" → 0,5 (không có dấu nghìn)
-function chuPhepTinh(heSo) {
-  var n = 1 / heSo;
-  return Math.abs(n - Math.round(n)) < 1e-9 ? '÷ ' + Math.round(n) : '× ' + String(heSo).replace('.', ',');
-}
+
 
 function docDich(ss, cfg, canhBao) {
   var sh = ss.getSheetByName(cfg.tab);
@@ -408,71 +392,12 @@ function caiDat() {
     Logger.log('Tab ' + TAB_DONGBO + ' đã có — giữ nguyên bảng ánh xạ');
   }
   chuyenCauHinh(layTabCauHinh(ss), sh, CAU_HINH_BAN_DAU);
-  gopCotHeSo(sh);
-  donVanBaoBi(ss, sh);
 
   var kq = tinhThayDoi();
   if (!kq.ok) { Logger.log('Lỗi: ' + kq.loi); return; }
   var doi = kq.mon.filter(function (m) { return m.trangThai !== 'giu'; });
   Logger.log('Đọc thử: ' + kq.mon.length + ' món được đồng bộ · cần đổi: ' + doi.length);
   kq.canhBao.forEach(function (c) { Logger.log('  [' + c.loai + '] ' + c.noiDung); });
-}
-
-/* Bản cũ có cột Hệ số: gộp vào cuối cột Nguồn (0,5 → "÷ 2") rồi xoá hẳn cột. Có giá trị hỏng → không đụng gì.
-   Tính giá trước và sau khi gộp để chắc không ô nào đổi. */
-function gopCotHeSo(sh) {
-  var hang = sh.getDataRange().getValues(), td = hang[0] || [];
-  var cHs = timCot(td, TD_HESO), cNg = timCot(td, TD_NGUON);
-  if (cHs < 0) return false;
-  if (cNg < 0) { Logger.log('Tab ' + TAB_DONGBO + ' có cột Hệ số nhưng thiếu cột ' + TD_NGUON + ' — chưa gộp'); return false; }
-  var sua = [], hong = [];
-  for (var i = 1; i < hang.length; i++) {
-    var v = hang[i][cHs];
-    if (v === '' || v == null) continue;
-    var hs = soThuc(v);
-    if (hs == null || hs <= 0) { hong.push('dòng ' + (i + 1) + ' "' + v + '"'); continue; }
-    var nguon = String(hang[i][cNg] || '').trim();
-    if (hs !== 1 && nguon) sua.push({ dong: i + 1, nguon: nguon + ' ' + chuPhepTinh(hs) });
-  }
-  if (hong.length) { Logger.log('Cột Hệ số có giá trị không hợp lệ (' + hong.join(', ') + ') — chưa gộp. Sửa lại rồi chạy caiDat lần nữa'); return false; }
-  var truoc = giaDuKien();
-  sua.forEach(function (x) { sh.getRange(x.dong, cNg + 1).setValue(x.nguon); Logger.log('  Nguồn dòng ' + x.dong + ': ' + x.nguon); });
-  sh.deleteColumn(cHs + 1);
-  SpreadsheetApp.flush();
-  var sau = giaDuKien(), lech = [];
-  Object.keys(truoc).concat(Object.keys(sau)).forEach(function (k) { if (truoc[k] !== sau[k] && lech.indexOf(k) < 0) lech.push(k); });
-  Logger.log('Đã gộp cột Hệ số vào cột Nguồn (' + sua.length + ' dòng) và xoá cột Hệ số — ' +
-    (lech.length ? 'LƯU Ý giá tính ra khác trước ở: ' + lech.join(', ') : 'giá tính ra không đổi (' + Object.keys(sau).length + ' ô giá)'));
-  return true;
-}
-
-/* Ngừng đồng bộ Vân Bao Bì: xoá các dòng Đích "SanPham" ở tab DongBo và dòng "Sheet Vân Bao Bì" ở tab CauHinh.
-   Xoá từ dưới lên để số dòng không lệch. Tính giá Menu trước và sau để chắc không ô nào đổi. Chạy lại không xoá gì thêm. */
-function donVanBaoBi(ss, sh) {
-  var xoaTheo = function (tab, cot, ten) {
-    if (!tab) return 0;
-    var hang = tab.getDataRange().getValues(), c = timCot(hang[0] || [], cot), n = 0;
-    if (c < 0) return 0;
-    for (var i = hang.length - 1; i >= 1; i--) if (chuanHoa(hang[i][c]) === chuanHoa(ten)) { tab.deleteRow(i + 1); n++; }
-    return n;
-  };
-  var truoc = giaDuKien();
-  var soDB = xoaTheo(sh, TD_DICH, DICH_DA_BO), soCH = xoaTheo(ss.getSheetByName(TAB_CAU_HINH), TD_TRUONG, TRUONG_DA_BO);
-  if (!soDB && !soCH) return 0;
-  SpreadsheetApp.flush();
-  var sau = giaDuKien(), lech = [];
-  Object.keys(truoc).concat(Object.keys(sau)).forEach(function (k) { if (truoc[k] !== sau[k] && lech.indexOf(k) < 0) lech.push(k); });
-  Logger.log('Ngừng đồng bộ Vân Bao Bì: xoá ' + soDB + ' dòng Đích "' + DICH_DA_BO + '" ở tab ' + TAB_DONGBO + ', ' + soCH +
-    ' dòng "' + TRUONG_DA_BO + '" ở tab ' + TAB_CAU_HINH + ' — ' +
-    (lech.length ? 'LƯU Ý giá tính ra khác trước ở: ' + lech.join(', ') : 'giá Menu tính ra không đổi (' + Object.keys(sau).length + ' ô giá)'));
-  return soDB + soCH;
-}
-
-/* { "Đích · Tên · Cột": giá tính ra } — để so trước/sau khi đổi bố cục */
-function giaDuKien() {
-  var kq = tinhToan(), gia = {};
-  if (kq.ok) kq.mon.forEach(function (m) { Object.keys(m.gia).forEach(function (c) { gia[m.dich + ' · ' + m.ten + ' · ' + c] = m.gia[c].moi; }); });
-  return gia;
 }
 
 /* ══════════════════ TAB CauHinh (dùng chung cho mọi công cụ — cùng đoạn code ở mọi script) ══════════════════ */
@@ -570,18 +495,21 @@ function xoaKhoiCu(sh, k) {
   sh.getRange(1, k.cTr + 1).setValue('Cấu hình → tab ' + TAB_CAU_HINH).setFontWeight('bold');
 }
 
-/* Mã PIN chung (tab CauHinh) — bắt buộc cho lệnh GHI. Sai / thiếu thì chờ 2 giây như sổ bán hàng (chống dò PIN). */
+/* Mã PIN chung (tab CauHinh) — cần cho mọi lệnh đọc và ghi. Sai / thiếu thì chờ 2 giây như sổ bán hàng (chống dò PIN). */
 var TRUONG_PIN = 'Mã PIN chung';
 function kiemPin(ss, pin) {
   var dung = layTheoTen(docCauHinhChung(ss), [TRUONG_PIN]);
-  if (dung === undefined || String(dung).trim() === '')
+  if (dung === undefined || chuanPin(dung) === '')
     return { ok: false, maLoi: 'THIEU_PIN', loi: 'Chưa có "' + TRUONG_PIN + '" trong tab ' + TAB_CAU_HINH + ' — chưa ghi được' };
-  if (String(pin == null ? '' : pin).trim() !== String(dung).trim()) {
+  if (chuanPin(pin) !== chuanPin(dung)) {
     Utilities.sleep(2000);
     return { ok: false, maLoi: 'PIN', loi: 'Sai mã PIN — xem ô "' + TRUONG_PIN + '" ở tab ' + TAB_CAU_HINH };
   }
   return { ok: true };
 }
+
+/* So PIN giống sổ bán hàng (bayich2_pos/appsscript): bỏ mọi khoảng trắng và số 0 đầu — ô PIN bị Sheet đổi thành số vẫn khớp */
+function chuanPin(s) { return String(s == null ? '' : s).replace(/\s+/g, '').replace(/^0+(?=\d)/, ''); }
 
 /* ══════════════════ phụ trợ ══════════════════ */
 function lamTron(v, buoc) { return Math.round(v / buoc) * buoc; }
